@@ -27,15 +27,22 @@ class Application extends App implements IBootstrap
 
     private function registerScripts(IBootContext $context)
     {
-
+        // Check if Viewer app is available
         if (!class_exists('\OCA\Viewer\Event\LoadViewer')) {
+            // Log that Viewer app is not available for debugging
+            error_log('Camera Raw Previews: Viewer app LoadViewer event not available');
             return;
         }
 
-        $eventDispatcher = $context->getServerContainer()->get(IEventDispatcher::class);
-        $eventDispatcher->addListener(\OCA\Viewer\Event\LoadViewer::class, function () {
-            Util::addScript($this->appName, 'register-viewer');  // adds js/script.js
-        });
+        try {
+            $eventDispatcher = $context->getServerContainer()->get(IEventDispatcher::class);
+            $eventDispatcher->addListener(\OCA\Viewer\Event\LoadViewer::class, function () {
+                Util::addScript($this->appName, 'register-viewer');  // adds js/register-viewer.js
+                error_log('Camera Raw Previews: Viewer script registered');
+            });
+        } catch (\Exception $e) {
+            error_log('Camera Raw Previews: Error registering viewer scripts: ' . $e->getMessage());
+        }
     }
 
     private function registerProvider(IRegistrationContext $context)
@@ -79,6 +86,14 @@ class Application extends App implements IBootstrap
 
     public function boot(IBootContext $context): void {
         $this->registerScripts($context);
+        
+        // Add fallback script registration for when Viewer event doesn't fire
+        try {
+            Util::addScript($this->appName, 'register-viewer');
+            error_log('Camera Raw Previews: Fallback script registration completed');
+        } catch (\Exception $e) {
+            error_log('Camera Raw Previews: Error in fallback script registration: ' . $e->getMessage());
+        }
     }
 
 }
