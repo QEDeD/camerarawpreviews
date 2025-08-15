@@ -3,3 +3,13 @@
 /build/*tar.gz
 /build/tools/perl-build/build/exiftool.bin
 /build/tools/perl-build/build/staticperl
+/.devcontainer/
+# .github kept for copilot-instructions.md
+/nextcloud/
+/.phpunit.cache/
+/.vscode/
+/.asset_size
+/.fast_subset
+# Provider diagnostics outputs
+/build/providers_*.json
+/build/providers_*.log

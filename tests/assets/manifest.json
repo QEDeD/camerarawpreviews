@@ -1,0 +1,69 @@
+[
+  {
+    "url": "https://raw.pixls.us/data/Nikon/D600/DSC_3297.NEF",
+    "filename": "nikon_d600.DSC_3297.NEF",
+    "sha1": "607599813cc5ea65e81595e07955a51f281bf0b7",
+    "format": "nef",
+    "cameraVendor": "Nikon",
+    "modelHint": "D600",
+    "size_limit": 40000000,
+  "expectedTag": "JpgFromRaw",
+    "labels": ["JpgFromRaw-candidate"]
+  },
+  {
+    "url": "https://raw.pixls.us/data/Canon/EOS%2050D/IMG_9518.CR2",
+    "filename": "canon_eos50d.IMG_9518.CR2",
+    "sha1": "eea0eaa8bf907d483b6234eab001fdc85848c80b",
+    "format": "cr2",
+    "cameraVendor": "Canon",
+    "modelHint": "EOS 50D",
+    "size_limit": 40000000,
+  "expectedTag": "PreviewImage",
+    "labels": ["PreviewImage-candidate"]
+  },
+  {
+    "url": "https://raw.pixls.us/data/Adobe%20DNG%20Converter/Canon%20EOS%205D%20Mark%20III/5G4A9395-compressed-lossless.DNG",
+    "filename": "canon_5d3.lossless.DNG",
+    "sha1": "a18d4dae67cfc0a9673c01b2d4f14fab4be68580",
+    "format": "dng",
+    "cameraVendor": "Canon",
+    "modelHint": "5D Mark III (DNG conv)",
+    "size_limit": 40000000,
+  "expectedTag": "JpgFromRaw",
+    "labels": ["OtherImage-candidate"]
+  },
+  {
+    "url": "https://raw.pixls.us/data/Fujifilm/X-A1/DSCF2482.RAF",
+    "filename": "fujifilm_xa1.DSCF2482.RAF",
+    "sha1": "82e625be5689bbd08a08dd9a9c5d38e21c80bf33",
+    "format": "raf",
+    "cameraVendor": "Fujifilm",
+    "modelHint": "X-A1",
+    "size_limit": 40000000,
+  "expectedTag": "PreviewImage",
+    "labels": ["ThumbnailImage-candidate"]
+  },
+  {
+    "url": "https://raw.pixls.us/data/Hasselblad/CF132/RAW_HASSELBLAD_IXPRESS_CF132.3FR",
+    "filename": "hasselblad_cf132.3FR",
+    "sha1": "bcaa4c329711a8effb59682a99df3f2b15009d87",
+    "format": "3fr",
+    "cameraVendor": "Hasselblad",
+    "modelHint": "CF132",
+    "size_limit": 50000000,
+  "expectedTag": "ThumbnailTIFF",
+    "labels": ["LargeFile","MediumFormat"]
+  },
+  {
+    "url": "https://file-examples.com/storage/fead1d809b64e7bcd9ab4f1/2017/10/file_example_TIFF_1MB.tiff",
+    "filename": "example.tiff",
+    "sha1": "e0b98db2a57d8f6e7217969b7f34d9d446df2697",
+    "format": "tiff",
+    "cameraVendor": "Sample",
+    "modelHint": "Example TIFF",
+    "size_limit": 5000000,
+    "optional": true,
+    "expectedTag": null,
+    "labels": ["TIFF-fallback"]
+  }
+]

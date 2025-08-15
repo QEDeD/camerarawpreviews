@@ -1,0 +1,9 @@
+# Exclude unnecessary paths from devcontainer build context
+# NOTE: Do NOT exclude .devcontainer/ or the Dockerfile will be missing from build context.
+.git/
+.github/
+build/
+vendor/
+node_modules/
+tests/assets/cache/
+*.tar.gz

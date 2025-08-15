@@ -1,0 +1,77 @@
+# Format Support Checklist
+
+Purpose: Keep our docs’ claimed support in sync with automated tests. Each item should have at least one asset in `tests/assets/cache` and an assertion in integration tests (PreviewFlowTest) or a dedicated test.
+
+- CR2 (Canon)
+  - Asset: tests/assets/cache/canon_eos50d.IMG_9518.CR2 ✓
+  - Test: tests/integration/PreviewFlowTest.php ✓
+- NEF (Nikon)
+  - Asset: tests/assets/cache/nikon_d600.DSC_3297.NEF ✓
+  - Test: tests/integration/PreviewFlowTest.php ✓
+- DNG (Adobe DNG)
+  - Asset: tests/assets/cache/canon_5d3.lossless.DNG ✓
+  - Test: tests/integration/PreviewFlowTest.php ✓
+- RAF (Fujifilm)
+  - Asset: tests/assets/cache/fujifilm_xa1.DSCF2482.RAF ✓
+  - Test: tests/integration/PreviewFlowTest.php ✓
+- 3FR (Hasselblad)
+  - Asset: tests/assets/cache/hasselblad_cf132.3FR ✓
+  - Tests: tests/integration/DirectProvider3frTest.php ✓ and PreviewFlowTest.php ✓
+- INDD (Adobe InDesign)
+  - Asset: MISSING (add small sample)
+  - Test: MISSING (add dedicated integration test ensuring provider selection)
+- ARW (Sony)
+  - Asset: MISSING
+  - Test: MISSING
+- CR3 (Canon)
+  - Asset: MISSING
+  - Test: MISSING
+- CRW (Canon)
+  - Asset: MISSING
+  - Test: MISSING
+- ERF (Epson)
+  - Asset: MISSING
+  - Test: MISSING
+- FFF (Hasselblad)
+  - Asset: MISSING
+  - Test: MISSING
+- IIQ (Phase One)
+  - Asset: MISSING
+  - Test: MISSING
+- KDC (Kodak)
+  - Asset: MISSING
+  - Test: MISSING
+- MRW (Minolta)
+  - Asset: MISSING
+  - Test: MISSING
+- NRW (Nikon)
+  - Asset: MISSING
+  - Test: MISSING
+- ORF (Olympus)
+  - Asset: MISSING
+  - Test: MISSING
+- ORI (Olympus/Proprietary)
+  - Asset: MISSING
+  - Test: MISSING
+- PEF (Pentax)
+  - Asset: MISSING
+  - Test: MISSING
+- RW2 (Panasonic)
+  - Asset: MISSING
+  - Test: MISSING
+- RWL (Leica)
+  - Asset: MISSING
+  - Test: MISSING
+- SR2/SRF/SRW (Sony/Samsung)
+  - Asset: MISSING
+  - Test: MISSING
+- X3F (Sigma)
+  - Asset: MISSING
+  - Test: MISSING
+- TIFF fallback (generic)
+  - Asset: tests/assets/cache/example.tiff (optional) ✓
+  - Test: PreviewFlowTest.php conditionally validates if Imagick supports TIFF ✓
+
+Notes:
+- Our provider’s `isAvailable` whitelist covers the full list above. Add assets incrementally (respect the 400MB cap) and reference them in `tests/assets/manifest.json` with `expectedTag` when possible.
+- INDD support relies on JPEG preview extraction; verify via PreviewManager path as part of the integration suite.

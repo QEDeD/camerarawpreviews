@@ -1,0 +1,42 @@
+<?php
+namespace OCA\CameraRawPreviews\AppInfo;
+
+use OCP\Files\IMimeTypeLoader;
+use OCP\Files\IMimeTypeMapping;
+
+class MimeTypeMapping implements IMimeTypeMapping {
+    /**
+     * @param IMimeTypeLoader $loader
+     */
+    public function getMimeTypeMappings(IMimeTypeLoader $loader): void {
+        $mimesToDetect = [
+            'indd' => ['image/x-indesign'],
+            '3fr' => ['image/x-dcraw'],
+            'arw' => ['image/x-dcraw'],
+            'cr2' => ['image/x-dcraw'],
+            'cr3' => ['image/x-dcraw'],
+            'crw' => ['image/x-dcraw'],
+            'dng' => ['image/x-dcraw'],
+            'erf' => ['image/x-dcraw'],
+            'fff' => ['image/x-dcraw'],
+            'iiq' => ['image/x-dcraw'],
+            'kdc' => ['image/x-dcraw'],
+            'mrw' => ['image/x-dcraw'],
+            'nef' => ['image/x-dcraw'],
+            'nrw' => ['image/x-dcraw'],
+            'orf' => ['image/x-dcraw'],
+            'ori' => ['image/x-dcraw'],
+            'pef' => ['image/x-dcraw'],
+            'raf' => ['image/x-dcraw'],
+            'rw2' => ['image/x-dcraw'],
+            'rwl' => ['image/x-dcraw'],
+            'sr2' => ['image/x-dcraw'],
+            'srf' => ['image/x-dcraw'],
+            'srw' => ['image/x-dcraw'],
+            'tif' => ['image/x-dcraw'],
+            'tiff' => ['image/x-dcraw'],
+            'x3f' => ['image/x-dcraw'],
+        ];
+        $loader->registerTypeArray($mimesToDetect);
+    }
+}

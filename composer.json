@@ -4,6 +4,10 @@
     "require": {
         "exiftool/exiftool": "master"
     },
+    "require-dev": {
+        "nextcloud/ocp": "^31.0",
+        "phpunit/phpunit": "^10.5"
+    },
     "license": "agpl",
     "authors": [
         {
@@ -13,16 +17,21 @@
     ],
     "minimum-stability": "dev",
     "prefer-stable": true,
+    "autoload": {
+        "psr-4": {
+            "OCA\\CameraRawPreviews\\": "lib/"
+        }
+    },
     "repositories": [
         {
             "type":"package",
             "package": {
-              "name": "exiftool/exiftool",
-              "version":"master",
-              "source": {
-                  "url": "https://github.com/exiftool/exiftool.git",
-                  "type": "git",
-                  "reference":"1e17485cbb372a502e5b9d052d01303db735e6fa"
+                "name": "exiftool/exiftool",
+                "version":"master",
+                "source": {
+                    "url": "https://github.com/exiftool/exiftool.git",
+                    "type": "git",
+                    "reference":"1e17485cbb372a502e5b9d052d01303db735e6fa"
                 }
             }
         }
