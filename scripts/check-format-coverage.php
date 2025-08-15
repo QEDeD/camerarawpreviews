@@ -7,6 +7,11 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
+// Provide a minimal stub for OCP\Files\IMimeTypeLoader when Nextcloud core isn't available
+if (!interface_exists('OCP\\Files\\IMimeTypeLoader')) {
+    eval('namespace OCP\\Files { interface IMimeTypeLoader { public function updateDatabase($path = null); public function registerTypeArray(array $arr): void; public function getMimetype(string $filename): string; } }');
+}
+
 use OCA\CameraRawPreviews\AppInfo\MimeTypeMapping;
 use OCP\Files\IMimeTypeLoader;
 
