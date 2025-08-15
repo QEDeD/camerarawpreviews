@@ -333,3 +333,23 @@ dev-env-verify:
 .PHONY: install-hooks
 install-hooks:
 	chmod +x scripts/install-git-hooks.sh; ./scripts/install-git-hooks.sh
+
+.PHONY: lint lint-php lint-js
+lint: lint-php lint-js
+	@echo "Lint complete."
+
+lint-php:
+	@echo "PHP syntax check (php -l) for tracked files..."; \
+	rc=0; \
+	for f in $$(git ls-files "*.php"); do php -l "$$f" >/dev/null || rc=1; done; \
+	[ $$rc -eq 0 ] || (echo "PHP syntax errors detected" >&2); \
+	exit $$rc
+
+lint-js:
+	@echo "JS lint (eslint) if available..."; \
+	ESLINT_BIN=$$( [ -x node_modules/.bin/eslint ] && echo node_modules/.bin/eslint || command -v eslint || true ); \
+	if [ -n "$$ESLINT_BIN" ]; then \
+		"$$ESLINT_BIN" js/ --ext .js --no-error-on-unmatched-pattern || true; \
+	else \
+		echo "eslint not found; skipping JS lint"; \
+	fi

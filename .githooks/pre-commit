@@ -35,9 +35,12 @@ while IFS= read -r f; do
   fi
 done < <(printf "%s\n" "${staged_files}")
 
-# 4) PHP syntax check on staged PHP files
+# 4) PHP syntax check
+#    a) Always lint staged PHP files
+#    b) If any PHP staged, also lint all tracked PHP files for safety
 php_files=$(echo "${staged_files}" | grep -E '\\.php$' || true)
 if [ -n "${php_files}" ]; then
+  echo "php -l on staged PHP files..."
   while IFS= read -r php; do
     [ -z "$php" ] && continue
     [ ! -f "$php" ] && continue
@@ -46,6 +49,14 @@ if [ -n "${php_files}" ]; then
       status=1
     fi
   done < <(printf "%s\n" "${php_files}")
+  echo "php -l on all tracked PHP files..."
+  while IFS= read -r php; do
+    [ -z "$php" ] && continue
+    if ! php -l "$php" > /dev/null; then
+      echo "Syntax error in $php" >&2
+      status=1
+    fi
+  done < <(git ls-files "*.php")
 fi
 
 if [ "$status" -ne 0 ]; then

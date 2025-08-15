@@ -1,0 +1,8 @@
+{
+  "name": "camerarawpreviews-dev",
+  "private": true,
+  "devDependencies": {
+    "@nextcloud/eslint-config": "^8.4.1",
+    "eslint": "^8.57.0"
+  }
+}
