@@ -1,0 +1,56 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Collect staged files (Added, Copied, Modified, Renamed)
+staged_files=$(git diff --cached --name-only --diff-filter=ACMR)
+[ -z "${staged_files}" ] && exit 0
+
+status=0
+
+# 1) Block cached binary assets from being committed (allow .gitkeep)
+blocked_assets=$(echo "${staged_files}" | grep -E '^tests/assets/cache/' | grep -v '/\.gitkeep$' || true)
+if [ -n "${blocked_assets}" ]; then
+  echo "Error: Attempting to commit cached test assets (use fetch-assets flow instead):" >&2
+  echo "${blocked_assets}" >&2
+  status=1
+fi
+
+# 2) Block provider diagnostics outputs
+blocked_diag=$(echo "${staged_files}" | grep -E '^build/providers_.*\.(json|log)$' || true)
+if [ -n "${blocked_diag}" ]; then
+  echo "Error: Provider diagnostics artefacts should not be committed:" >&2
+  echo "${blocked_diag}" >&2
+  status=1
+fi
+
+# 3) Warn/fail on very large files (>10MB)
+while IFS= read -r f; do
+  [ -z "$f" ] && continue
+  if [ -f "$f" ]; then
+    bytes=$(wc -c < "$f" | tr -d ' ')
+    if [ "$bytes" -gt 10485760 ]; then
+      echo "Error: Large file (>10MB) staged: $f ($bytes bytes)" >&2
+      status=1
+    fi
+  fi
+done < <(printf "%s\n" "${staged_files}")
+
+# 4) PHP syntax check on staged PHP files
+php_files=$(echo "${staged_files}" | grep -E '\\.php$' || true)
+if [ -n "${php_files}" ]; then
+  while IFS= read -r php; do
+    [ -z "$php" ] && continue
+    [ ! -f "$php" ] && continue
+    if ! php -l "$php" > /dev/null; then
+      echo "Syntax error in $php" >&2
+      status=1
+    fi
+  done < <(printf "%s\n" "${php_files}")
+fi
+
+if [ "$status" -ne 0 ]; then
+  echo "Pre-commit checks failed." >&2
+  exit 1
+fi
+
+exit 0

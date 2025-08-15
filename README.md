@@ -151,3 +151,16 @@ No Remote CI dependency: All quality gates are intentionally local; do not add G
 
 ### Supported Formats vs Tests
 See `docs/format-support-checklist.md` for a living checklist mapping claimed support to test assets and coverage.
+
+### Pre-commit Hook (Local)
+Install local git hooks to prevent accidental large/binary asset commits and to run a quick PHP syntax check:
+
+```bash
+scripts/install-git-hooks.sh
+```
+
+This sets `core.hooksPath` to `.githooks` and enables a pre-commit that:
+- Blocks files in `tests/assets/cache/` (except `.gitkeep`)
+- Blocks provider diagnostic outputs in `build/providers_*.{json,log}`
+- Fails on staged files >10MB
+- Runs `php -l` on staged PHP files

@@ -13,3 +13,5 @@
 # Provider diagnostics outputs
 /build/providers_*.json
 /build/providers_*.log
+/tests/assets/cache/*
+!/tests/assets/cache/.gitkeep
