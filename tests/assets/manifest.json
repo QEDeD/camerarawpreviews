@@ -11,6 +11,30 @@
     "labels": ["JpgFromRaw-candidate"]
   },
   {
+    "url": "https://raw.pixls.us/data/Sony/ILCE-7M3/_DSC0009.ARW",
+    "filename": "sony_a7iii._DSC0009.ARW",
+    "sha1": "0000000000000000000000000000000000000000",
+    "format": "arw",
+    "cameraVendor": "Sony",
+    "modelHint": "ILCE-7M3",
+    "size_limit": 30000000,
+    "optional": true,
+    "expectedTag": "PreviewImage",
+    "labels": ["ARW-sample"]
+  },
+  {
+    "url": "https://raw.pixls.us/data/Canon/EOS%20R6/Canon_EOS_R6_CRAW_ISO_100_crop_nodual.CR3",
+    "filename": "canon_r6.CRAW_ISO_100_crop.CR3",
+    "sha1": "0000000000000000000000000000000000000000",
+    "format": "cr3",
+    "cameraVendor": "Canon",
+    "modelHint": "EOS R6",
+    "size_limit": 7000000,
+    "optional": true,
+    "expectedTag": "PreviewImage",
+    "labels": ["CR3-sample"]
+  },
+  {
     "url": "https://raw.pixls.us/data/Canon/EOS%2050D/IMG_9518.CR2",
     "filename": "canon_eos50d.IMG_9518.CR2",
     "sha1": "eea0eaa8bf907d483b6234eab001fdc85848c80b",

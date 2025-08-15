@@ -4,6 +4,8 @@
 /build/tools/perl-build/build/exiftool.bin
 /build/tools/perl-build/build/staticperl
 /.devcontainer/
+# Keep repo local-only; ignore GitHub workflows unless explicitly whitelisted
+/.github/
 # .github kept for copilot-instructions.md
 /nextcloud/
 /.phpunit.cache/

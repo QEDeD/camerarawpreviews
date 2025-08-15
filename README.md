@@ -127,8 +127,13 @@ Health Checks:
 To rebuild exiftool helper (if needed): `make ensure-exiftool-bin`
 
 ### Choosing a Workflow
-Use (A) for deep integration debugging with core test harness.
-Use (B) for fast manual UI / preview checks.
+- Auto-detect: `make integration` (prefers Docker/Podman; falls back to core flow automatically)
+- Force core flow: `FORCE_CORE=1 make integration`
+- Force container flow: `FORCE_DOCKER=1 make integration`
+
+Guidance:
+- Use Core (A) for deep integration debugging with the core test harness.
+- Use Container (B) for fast manual UI/Viewer checks.
 
 ### Test Assets & Validation
 Commands (all local, no GitHub Actions required):
@@ -145,7 +150,16 @@ Commands (all local, no GitHub Actions required):
 
 Asset governance: Hard cap 400MB enforced by validate script. If exceeded, remove or replace largest files before proceeding.
 
-Fast iteration: `make test-fast` executes a limited representative subset (unit + tag logic). Use `make test-local` for broader coverage.
+Fast iteration: `make test-fast` executes a limited representative subset (unit + tag logic). Use `make test-local` for broader coverage. If your devcontainer lacks Docker-in-Docker, `make integration` will transparently run the core flow instead.
+
+## Key Supported Formats
+- Canon: CR2, CR3 (and CRW)
+- Nikon: NEF (and NRW)
+- Sony: ARW (and SR2/SRF/SRW)
+- Adobe: DNG
+- Plus many others: 3FR, RAF, RW2, ORF, PEF, IIQ, FFF, MRW, KDC, X3F, RWL, ORI, TIFF
+
+See “Supported Formats vs Tests” above and `docs/format-support-checklist.md` for coverage status (assets and tests).
 
 No Remote CI dependency: All quality gates are intentionally local; do not add GitHub Actions workflows. Any future automation must still be reproducible via a single documented local Make target.
 

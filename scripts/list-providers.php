@@ -16,7 +16,9 @@ use OCP\Preview\IPreview;
 use OCP\Files\Node;
 use Psr\Log\LoggerInterface;
 
-$assetRel = 'tests/assets/cache/hasselblad_cf132.3FR'; // target asset to probe selection
+// Allow selecting an asset via environment variable (default to 3FR)
+$envAsset = getenv('ASSET') ?: '';
+$assetRel = $envAsset !== '' ? $envAsset : 'tests/assets/cache/hasselblad_cf132.3FR'; // target asset to probe selection
 fwrite(STDERR, "Starting provider listing...\n");
 $asset = __DIR__ . '/../' . $assetRel;
 if (!file_exists($asset)) { fwrite(STDERR, "Asset not found: $assetRel\n"); exit(2);} 

@@ -21,11 +21,11 @@ Purpose: Keep our docs’ claimed support in sync with automated tests. Each ite
   - Asset: MISSING (add small sample)
   - Test: MISSING (add dedicated integration test ensuring provider selection)
 - ARW (Sony)
-  - Asset: MISSING
-  - Test: MISSING
+  - Asset: optional sample added (tests/assets/cache/sony_a7iii._DSC0009.ARW) ◻ (downloaded on demand)
+  - Test: covered by PreviewFlowTest when asset present
 - CR3 (Canon)
-  - Asset: MISSING
-  - Test: MISSING
+  - Asset: optional sample added (tests/assets/cache/canon_r6.CRAW_ISO_100_crop.CR3) ◻ (downloaded on demand)
+  - Test: covered by PreviewFlowTest when asset present
 - CRW (Canon)
   - Asset: MISSING
   - Test: MISSING

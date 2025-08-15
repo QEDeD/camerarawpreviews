@@ -174,6 +174,35 @@ integration-docker: ensure-exiftool-bin run-nc-container fetch-assets
 	fi; \
 	$(DOCKER) exec --workdir /var/www/html/custom_apps/camerarawpreviews --user www-data $$CID phpunit9 --bootstrap tests/bootstrap.php tests/integration || true
 
+# Auto-detect best integration flow: prefer Docker/Podman, else fall back to core checkout flow
+.PHONY: integration
+integration:
+	@if [ -n "$$FORCE_CORE" ]; then \
+		echo 'FORCE_CORE set; running core integration flow...'; \
+		$(MAKE) integration-full; \
+	elif [ -n "$$FORCE_DOCKER" ]; then \
+		echo 'FORCE_DOCKER set; attempting container flow...'; \
+		if command -v $(DOCKER) >/dev/null 2>&1; then \
+			$(MAKE) integration-docker; \
+		elif command -v podman >/dev/null 2>&1; then \
+			echo '$(DOCKER) not found; using podman...'; \
+			DOCKER=podman $(MAKE) integration-docker; \
+		else \
+			echo 'ERROR: No container runtime found (docker/podman).'; exit 1; \
+		fi; \
+	else \
+		if command -v $(DOCKER) >/dev/null 2>&1; then \
+			echo 'Detected container runtime ($(DOCKER)); running integration-docker...'; \
+			$(MAKE) integration-docker; \
+		elif command -v podman >/dev/null 2>&1; then \
+			echo 'Detected podman; running integration-docker with DOCKER=podman...'; \
+			DOCKER=podman $(MAKE) integration-docker; \
+		else \
+			echo 'No container runtime found; falling back to core flow (integration-full).'; \
+			$(MAKE) integration-full; \
+		fi; \
+	fi
+
 .PHONY: docker-health
 docker-health:
 	CID=$$($(DOCKER) ps --format '{{.ID}} {{.Names}}' | awk '/nc-dev$$/{print $$1}'); \
@@ -253,6 +282,14 @@ verify-assets: fetch-assets
 validate-assets: fetch-assets
 	chmod +x scripts/validate-assets.sh; ./scripts/validate-assets.sh
 
+.PHONY: coverage-key
+coverage-key:
+	php -d memory_limit=256M scripts/check-format-coverage.php KEY_FORMATS=cr2,cr3,nef,arw,dng
+
+.PHONY: coverage-full
+coverage-full:
+	php -d memory_limit=256M scripts/check-format-coverage.php FULL=1
+
 .PHONY: annotate-tags
 annotate-tags: fetch-assets ensure-exiftool-bin
 	chmod +x scripts/annotate-tags.sh; ./scripts/annotate-tags.sh
@@ -265,6 +302,19 @@ test-fast: ensure-exiftool-bin fetch-assets
 	echo "Running fast subset tests (unit + manifest tag checks only)"; \
 	CRP_STANDALONE_SKIP=1 vendor/bin/phpunit --bootstrap tests/bootstrap.php tests/RawPreviewBaseTagTest.php || true; \
 	echo "(Optional) To run integration preview tests on subset manually, copy listed files into a Nextcloud test instance."
+
+# Iterative per-format integration run: fetch a format, run key integration tests, then clean cache and continue.
+.PHONY: integration-iterate
+integration-iterate: ensure-exiftool-bin setup-core
+	@fmts=$${FORMATS:-"cr2 nef dng arw cr3"}; \
+	for f in $$fmts; do \
+		echo "=== Format: $$f (fetch) ==="; \
+		FORMATS=$$f $(MAKE) fetch-assets; \
+		echo "=== Format: $$f (test) ==="; \
+		php -d memory_limit=512M vendor/bin/phpunit --bootstrap tests/bootstrap.php tests/integration/PreviewKeyFormatsSelectionTest.php || true; \
+		echo "=== Format: $$f (clean) ==="; \
+		bash scripts/clean-assets.sh tests/assets/cache $$f; \
+	done
 
 # Build devcontainer image locally and run verify-env (offline replacement for removed GitHub Actions workflow)
 .PHONY: dev-env-verify
@@ -279,3 +329,7 @@ dev-env-verify:
 	docker rm crp_hash >/dev/null || true; \
 	if [ -f .vendor-built-from.image ]; then echo "Image vendor hash:"; cat .vendor-built-from.image; fi; \
 	echo "dev-env-verify completed.";
+
+.PHONY: install-hooks
+install-hooks:
+	chmod +x scripts/install-git-hooks.sh; ./scripts/install-git-hooks.sh

@@ -17,6 +17,10 @@
     ],
     "minimum-stability": "dev",
     "prefer-stable": true,
+        "scripts": {
+            "test": "vendor/bin/phpunit",
+            "test:unit": "vendor/bin/phpunit --testsuite CameraRawPreviews --colors=never"
+        },
     "autoload": {
         "psr-4": {
             "OCA\\CameraRawPreviews\\": "lib/"
