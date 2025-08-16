@@ -17,3 +17,8 @@
 /build/providers_*.log
 /tests/assets/cache/*
 !/tests/assets/cache/.gitkeep
+node_modules
+
+# ESLint cache and logs
+/.eslintcache
+/build/logs/
