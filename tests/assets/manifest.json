@@ -93,21 +93,81 @@
   ,
   {"url":"","filename":"sample.indd","sha1":"auto","format":"indd","cameraVendor":"Adobe","modelHint":"InDesign","size_limit":50000000,"optional":true,"expectedTag":null,"labels":["MISSING_URL"]}
   ,
-  {"url":"","filename":"sample.crw","sha1":"auto","format":"crw","cameraVendor":"Canon","modelHint":"CRW","size_limit":50000000,"expectedTag":null,"labels":["MISSING_URL"]}
+  {
+    "url": "https://raw.pixls.us/data/Canon/EOS%20300D/103_0333.crw",
+    "filename": "sample.crw",
+    "sha1": "auto",
+    "format": "crw",
+    "cameraVendor": "Canon",
+    "modelHint": "CRW",
+    "size_limit": 50000000,
+    "expectedTag": null,
+    "labels": ["CRW-sample"]
+  }
   ,
-  {"url":"","filename":"sample.erf","sha1":"auto","format":"erf","cameraVendor":"Epson","modelHint":"ERF","size_limit":50000000,"expectedTag":null,"labels":["MISSING_URL"]}
+  {
+    "url": "https://raw.pixls.us/data/Epson/R-D1/_EPS0672.ERF",
+    "filename": "sample.erf",
+    "sha1": "auto",
+    "format": "erf",
+    "cameraVendor": "Epson",
+    "modelHint": "R-D1",
+    "size_limit": 50000000,
+    "expectedTag": null,
+    "labels": ["ERF-sample"]
+  }
   ,
-  {"url":"","filename":"sample.fff","sha1":"auto","format":"fff","cameraVendor":"Hasselblad","modelHint":"FFF","size_limit":120000000,"expectedTag":null,"labels":["MISSING_URL"]}
+  {
+    "url": "https://raw.pixls.us/data/Hasselblad/H5D-40/20151114_CCSG_on_Hasselblad_H5D40-0726.fff",
+    "filename": "hasselblad_h5d40.20151114_CCSG.fff",
+    "sha1": "auto",
+    "format": "fff",
+    "cameraVendor": "Hasselblad",
+    "modelHint": "H5D-40",
+    "size_limit": 120000000,
+    "expectedTag": null,
+    "labels": ["FFF-sample", "H5D-40"]
+  }
   ,
-  {"url":"","filename":"sample.iiq","sha1":"auto","format":"iiq","cameraVendor":"Phase One","modelHint":"IIQ","size_limit":50000000,"expectedTag":null,"labels":["MISSING_URL"]}
+  {
+    "url": "https://raw.pixls.us/data/Phase%20One/IQ3%20100MP/Phase_One_IQ3_100MP_IIQ_L.IIQ",
+    "filename": "sample.iiq",
+    "sha1": "auto",
+    "format": "iiq",
+    "cameraVendor": "Phase One",
+    "modelHint": "IQ3 100MP",
+    "size_limit": 50000000,
+    "expectedTag": null,
+    "labels": ["IIQ-sample"]
+  }
   ,
   {"url":"","filename":"sample.kdc","sha1":"auto","format":"kdc","cameraVendor":"Kodak","modelHint":"KDC","size_limit":50000000,"expectedTag":null,"labels":["MISSING_URL"]}
   ,
-  {"url":"","filename":"sample.mrw","sha1":"auto","format":"mrw","cameraVendor":"Minolta","modelHint":"MRW","size_limit":50000000,"expectedTag":null,"labels":["MISSING_URL"]}
+  {
+    "url": "https://raw.pixls.us/data/MINOLTA/DYNAX%205D/Minolta_Dynax_5D.MRW",
+    "filename": "sample.mrw",
+    "sha1": "auto",
+    "format": "mrw",
+    "cameraVendor": "Minolta",
+    "modelHint": "Dynax 5D",
+    "size_limit": 50000000,
+    "expectedTag": null,
+    "labels": ["MRW-sample"]
+  }
   ,
   {"url":"","filename":"sample.nrw","sha1":"auto","format":"nrw","cameraVendor":"Nikon","modelHint":"NRW","size_limit":50000000,"expectedTag":null,"labels":["MISSING_URL"]}
   ,
-  {"url":"","filename":"sample.orf","sha1":"auto","format":"orf","cameraVendor":"Olympus","modelHint":"ORF","size_limit":50000000,"expectedTag":null,"labels":["MISSING_URL"]}
+  {
+    "url": "https://raw.pixls.us/data/Olympus/E-5/_7061961_copy.ORF",
+    "filename": "sample.orf",
+    "sha1": "auto",
+    "format": "orf",
+    "cameraVendor": "Olympus",
+    "modelHint": "E-5",
+    "size_limit": 50000000,
+    "expectedTag": null,
+    "labels": ["ORF-sample"]
+  }
   ,
   {"url":"","filename":"sample.ori","sha1":"auto","format":"ori","cameraVendor":"Olympus","modelHint":"ORI","size_limit":50000000,"expectedTag":null,"labels":["MISSING_URL"]}
   ,
