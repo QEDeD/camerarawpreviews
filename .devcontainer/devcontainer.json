@@ -1,0 +1,55 @@
+{
+	"name": "camerarawpreviews (Docker-in-Docker)",
+	"build": {
+		"dockerfile": "Dockerfile",
+		"context": "..",
+		"args": {
+			"BASE_IMAGE": "mcr.microsoft.com/devcontainers/php:1-8.2-bookworm"
+		}
+	},
+	"features": {
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {
+			"version": "latest",
+			"moby": false
+		},
+		"ghcr.io/devcontainers/features/node:1": {
+			"version": "lts",
+			"nodeGypDependencies": true
+		}
+	},
+	"workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind",
+	"workspaceFolder": "/workspace",
+	"remoteUser": "vscode",
+	"customizations": {
+		"vscode": {
+			"settings": {
+				"php.validate.executablePath": "/usr/local/bin/php",
+				"editor.formatOnSave": false
+			},
+			"extensions": [
+				"bmewburn.vscode-intelephense-client",
+				"xdebug.php-debug"
+			]
+		}
+	},
+	"containerEnv": {
+		"TZ": "${localEnv:TZ}"
+	},
+	"remoteEnv": {
+		"COMPOSER_ALLOW_SUPERUSER": "1",
+		"COMPOSER_CACHE_DIR": "/tmp/composer-cache"
+	},
+	"mounts": [
+		"source=crp-docker-data,target=/var/lib/docker,type=volume",
+		"source=camerarawpreviews-composer-cache,target=/tmp/composer-cache,type=volume",
+		"source=/etc/localtime,target=/etc/localtime,type=bind,readonly",
+		"source=/etc/timezone,target=/etc/timezone,type=bind,readonly"
+	],
+	"postCreateCommand": "/bin/bash .devcontainer/post-create.sh && npm ci || true",
+	"forwardPorts": [8080],
+	"runArgs": ["--init"],
+	"hostRequirements": {
+		"cpus": 2,
+		"memory": "4gb"
+	}
+}
