@@ -57,6 +57,12 @@ Open repository in supported editor (e.g. VS Code) and let the Dev Container bui
 
 Note on timezone: The devcontainer inherits the host timezone automatically (TZ env + /etc/localtime and /etc/timezone mounts). If TZ is not set by the host, the shell auto-detects from /etc/localtime. To override, export TZ (e.g., `export TZ=Europe/Berlin`).
 
+Container test path (recommended):
+- Rebuild/open the devcontainer to ensure Docker-in-Docker is active.
+- Start Nextcloud container: `make run-nc-container`
+- Run full tests inside container: `make tests`
+- Integration-only: `make integration-docker`
+
 ### Adding New Checks
 When proposing a new quality gate, add a Make target and document it here. Do not rely on hidden scripts or external service configuration.
 
