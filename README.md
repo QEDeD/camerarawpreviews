@@ -58,6 +58,28 @@ Open repository in supported editor (e.g. VS Code) and let the Dev Container bui
 ### Adding New Checks
 When proposing a new quality gate, add a Make target and document it here. Do not rely on hidden scripts or external service configuration.
 
+## Linting
+Run code quality checks locally; no external CI is required.
+
+- One-shot lint bundle
+  - make lint
+    - PHP syntax (php -l) on tracked files
+    - JS lint via ESLint if available (install dev deps first with npm ci)
+
+- JavaScript (ESLint)
+  - npm ci
+  - make lint-js       # prefers local eslint in node_modules
+  - Optional direct run: npx eslint . --ext .js,.cjs,.mjs --cache
+  - Autofix: npx eslint js --ext .js,.cjs,.mjs --fix
+
+- PHP (PHP_CodeSniffer)
+  - vendor/bin/phpcs --standard=phpcs.xml
+  - Autofix: vendor/bin/phpcbf --standard=phpcs.xml lib
+
+- Pre-commit hooks (local)
+  - scripts/install-git-hooks.sh
+  - Blocks large/binary assets under tests/assets/cache and runs a quick PHP syntax check
+
 ## Building the exiftool helper (exiftool.bin)
 You have three options:
 - Docker (default): Builds a static Perl runtime inside a container
