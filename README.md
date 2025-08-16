@@ -57,9 +57,11 @@ Open repository in supported editor (e.g. VS Code) and let the Dev Container bui
 
 Note on timezone: The devcontainer inherits the host timezone automatically (TZ env + /etc/localtime and /etc/timezone mounts). If TZ is not set by the host, the shell auto-detects from /etc/localtime. To override, export TZ (e.g., `export TZ=Europe/Berlin`).
 
+Container runtime requirement: For container-based tests you need a container runtime on the host (Docker or Podman). Most Make targets accept overriding the runtime via `DOCKER=podman`.
+
 Container test path (recommended):
 - Rebuild/open the devcontainer to ensure Docker-in-Docker is active.
-- Start Nextcloud container: `make run-nc-container`
+- Start Nextcloud container: `make run-nc-container` (or `DOCKER=podman make run-nc-container`)
 - Run full tests inside container: `make tests`
 - Integration-only: `make integration-docker`
 

@@ -319,14 +319,17 @@ integration-iterate: ensure-exiftool-bin setup-core
 # Build devcontainer image locally and run verify-env (offline replacement for removed GitHub Actions workflow)
 .PHONY: dev-env-verify
 dev-env-verify:
-	@echo "Building devcontainer image (INSTALL_NODE=no) ..."; \
-	docker build --build-arg INSTALL_NODE=no -f .devcontainer/Dockerfile -t camerarawpreviews-dev-local .; \
+	@set -e; \
+	RUNTIME=$$(command -v $${DOCKER:-docker} >/dev/null 2>&1 && echo $${DOCKER:-docker} || (command -v podman >/dev/null 2>&1 && echo podman || echo none)); \
+	if [ "$$RUNTIME" = none ]; then echo 'No container runtime (docker/podman) found on host.'; exit 1; fi; \
+	echo "Building devcontainer image with $$RUNTIME (INSTALL_NODE=no) ..."; \
+	"$$RUNTIME" build --build-arg INSTALL_NODE=no -f .devcontainer/Dockerfile -t camerarawpreviews-dev-local .; \
 	echo "Running verify-env inside container..."; \
-	docker run --rm camerarawpreviews-dev-local verify-env; \
+	"$$RUNTIME" run --rm camerarawpreviews-dev-local verify-env; \
 	echo "Extracting vendor hash (if present)..."; \
-	docker create --name crp_hash camerarawpreviews-dev-local bash -c 'test -f /workspace/.vendor-built-from && cat /workspace/.vendor-built-from || true' >/dev/null; \
-	docker cp crp_hash:/workspace/.vendor-built-from .vendor-built-from.image 2>/dev/null || true; \
-	docker rm crp_hash >/dev/null || true; \
+	CID=$$("$$RUNTIME" create camerarawpreviews-dev-local bash -lc 'test -f /workspace/.vendor-built-from && cat /workspace/.vendor-built-from || true'); \
+	"$$RUNTIME" cp $$CID:/workspace/.vendor-built-from .vendor-built-from.image 2>/dev/null || true; \
+	"$$RUNTIME" rm $$CID >/dev/null || true; \
 	if [ -f .vendor-built-from.image ]; then echo "Image vendor hash:"; cat .vendor-built-from.image; fi; \
 	echo "dev-env-verify completed.";
 

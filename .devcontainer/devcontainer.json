@@ -24,7 +24,20 @@
 		"vscode": {
 			"settings": {
 				"php.validate.executablePath": "/usr/local/bin/php",
-				"editor.formatOnSave": false
+				"editor.formatOnSave": false,
+				"files.watcherExclude": {
+					"**/vendor/**": true,
+					"**/node_modules/**": true,
+					"**/build/**": true,
+					"**/tests/assets/cache/**": true,
+					"**/.git/**": true
+				},
+				"search.exclude": {
+					"**/vendor/**": true,
+					"**/node_modules/**": true,
+					"**/build/**": true,
+					"**/tests/assets/cache/**": true
+				}
 			},
 			"extensions": [
 				"bmewburn.vscode-intelephense-client",

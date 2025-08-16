@@ -1,0 +1,17 @@
+* text=auto eol=lf
+
+# Shell scripts, Dockerfiles, Makefiles: always LF
+*.sh text eol=lf
+Dockerfile text eol=lf
+.devcontainer/** text eol=lf
+Makefile text eol=lf
+
+# Images and archives as binary
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.svg text
+*.tar.gz binary
+*.zip binary
+*.gz binary
