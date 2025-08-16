@@ -1,0 +1,2 @@
+# Ignore the local Nextcloud core fixture; we only audit this app's own deps
+nextcloud/

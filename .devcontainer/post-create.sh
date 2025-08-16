@@ -12,7 +12,9 @@ fi
 echo "[1/3] Verifying base environment"
 /usr/local/bin/verify-env
 
-echo "[2/3] Installing composer dependencies (if needed)"
+echo "[2/3] Configuring git safe.directory and installing composer dependencies (if needed)"
+# Avoid "dubious ownership" when working with volume mounts
+git config --global --add safe.directory /workspace || true
 if [ -f composer.json ]; then
     if [ ! -d vendor ] || [ ! -f vendor/autoload.php ]; then
         composer install --prefer-dist --no-interaction

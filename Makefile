@@ -367,3 +367,20 @@ phpcs-fix:
 	@echo "Running phpcbf (auto-fix where possible)..."; \
 	if [ ! -x vendor/bin/phpcbf ]; then composer install --prefer-dist; fi; \
 	vendor/bin/phpcbf --standard=phpcs.xml || true
+
+# Security audit focused on app-level dependencies only (skip local Nextcloud fixture)
+.PHONY: audit audit-app
+audit: audit-app
+
+audit-app:
+	@echo "[audit] Composer audit (prod deps only)..."; \
+	if command -v composer >/dev/null 2>&1; then \
+		composer audit --no-interaction || true; \
+	else \
+		echo "composer not found; using containerized composer:2"; \
+		$(DOCKER) run --rm -v $(CURDIR):/app -w /app composer:2 composer audit --no-interaction || true; \
+	fi
+	@echo "[audit] Trivy FS scan (HIGH/CRITICAL, --scanners vuln, excluding ./nextcloud)..."; \
+	mkdir -p build; \
+	$(DOCKER) run --rm -v $(CURDIR):/work aquasec/trivy:0.53.0 fs --severity HIGH,CRITICAL --scanners vuln --ignore-unfixed --no-progress --skip-dirs /work/nextcloud --format json -o /work/build/trivy_app.json /work || true; \
+	echo "[audit] Trivy JSON report: build/trivy_app.json"

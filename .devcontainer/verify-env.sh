@@ -3,8 +3,9 @@ set -euo pipefail
 missing=0
 
 php -v | head -n1
-echo "PHP extensions present:" $(php -m | grep -E '^(gd|imagick)$' | tr '\n' ' ')
+echo "PHP extensions present:" $(php -m | grep -E '^(gd|zip|imagick)$' | tr '\n' ' ')
 php -m | grep -q '^gd$' || { echo 'gd extension missing'; missing=1; }
+php -m | grep -q '^zip$' || { echo 'zip extension missing'; missing=1; }
 php -m | grep -q '^imagick$' || { echo 'imagick extension missing'; missing=1; }
 command -v convert >/dev/null || { echo 'ImageMagick convert missing'; missing=1; }
 if [ "${missing:-0}" = 1 ]; then

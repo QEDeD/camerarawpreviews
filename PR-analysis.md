@@ -4,7 +4,7 @@
 
 Integrity note: Removed corrupted duplicated header and stray embedded exiftool snippet previously present above; content below is authoritative.
 
-Last updated: 2025-08-16 (verification timestamp 2025-08-16T09:27:00+0200 CEST)
+Last updated: 2025-08-16 (verification timestamp 2025-08-16T15:10:00+0200 CEST)
 
 ## 1. Context & Problem Statement  <!-- id:context updated:2025-08-15T00:10:00Z -->
 On Nextcloud Hub 10 (31.0.0) RAW files (CR2, NEF, DNG, etc.) were downloaded instead of opening in the Viewer. Hypothesis (confirmed by behavior change after fix): race / timing issue with the Viewer `LoadViewer` event in NC 31 causing our registration script to miss the event.
@@ -61,6 +61,18 @@ grep -iq exponential js/register-viewer.js && \
 test -f build/camerarawpreviews_nextcloud.tar.gz && \
 echo "OK" || echo "FAIL"
 ```
+
+## 6.1 Devcontainer Verification (2025-08-16)  <!-- id:verification-devcontainer updated:2025-08-16T15:10:00Z -->
+- Fixed PHP zip runtime by adding `libzip4`; ensured `zip` extension loads (asserted at build and via verify script).
+- Disabled CLI Xdebug by default: `ENV XDEBUG_MODE=off` to avoid step-debug connection noise.
+- Post-create now marks `/workspace` as a safe Git directory to eliminate "dubious ownership" on Windows volume mounts.
+- Adopted volume-backed workspace in `devcontainer.json`; bootstrap clones repo into Docker volume if empty.
+- Verified inside container:
+  - `verify-env` reports: PHP 8.2 with `gd, zip, imagick` and `convert` present.
+  - `composer install` succeeds.
+  - `vendor/bin/phpunit -c phpunit.xml.dist` passes: Tests 14, Assertions 47, Skipped 1.
+
+Artifacts: `build/trivy_app.json` (Trivy app-only scan), `.trivyignore` (excludes local Nextcloud fixture).
 
 ## 7. Deployment Test Plan (NC 31)  <!-- id:deployment-plan updated:2025-08-14T15:35:39Z -->
 1. Extract tarball to `apps` (or `apps-extra`).
