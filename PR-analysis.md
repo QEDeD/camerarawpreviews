@@ -1,10 +1,10 @@
 # Camera RAW Previews – Analysis & Implementation Log (Consolidated)
 
-<!-- File baseline timestamp: 2025-08-14T15:35:39Z -->
+<!-- File baseline timestamp: 2025-08-16T09:27:00+0200 (CEST) -->
 
 Integrity note: Removed corrupted duplicated header and stray embedded exiftool snippet previously present above; content below is authoritative.
 
-Last updated: 2025-08-15 (verification timestamp 2025-08-15T00:10:00Z)
+Last updated: 2025-08-16 (verification timestamp 2025-08-16T09:27:00+0200 CEST)
 
 ## 1. Context & Problem Statement  <!-- id:context updated:2025-08-15T00:10:00Z -->
 On Nextcloud Hub 10 (31.0.0) RAW files (CR2, NEF, DNG, etc.) were downloaded instead of opening in the Viewer. Hypothesis (confirmed by behavior change after fix): race / timing issue with the Viewer `LoadViewer` event in NC 31 causing our registration script to miss the event.
