@@ -3,6 +3,16 @@ set -euo pipefail
 MANIFEST="tests/assets/manifest.json"
 DEST_DIR="$(pwd)/tests/assets/cache"
 mkdir -p "$DEST_DIR"
+# Guard: discourage host-side asset caching; allow only inside NC container unless forced
+if [ -z "${INSIDE_NC_CONTAINER:-}" ] && [ "${FORCE_HOST_FETCH:-}" != "1" ]; then
+    case "$(pwd)" in
+        */var/www/html/custom_apps/camerarawpreviews* ) : ;; # inside NC container mount
+        * )
+            echo "Refusing to cache test assets on host. Run via 'make integration' (container) or set FORCE_HOST_FETCH=1 to override." >&2
+            exit 1
+            ;;
+    esac
+fi
 python3 - <<'PY'
 import json, os, sys, hashlib, urllib.request, urllib.parse, time
 

@@ -21,6 +21,7 @@ if ! "$DOCKER_BIN" ps -a --format '{{.Names}}' | grep -q "^${NAME}$"; then
   fi
   "$DOCKER_BIN" run -d --name ${NAME} -p 8080:80 \
     -e NEXTCLOUD_ADMIN_USER=admin -e NEXTCLOUD_ADMIN_PASSWORD=admin \
+    -e INSIDE_NC_CONTAINER=1 \
     -v "${APP_PATH}":/var/www/html/custom_apps/${APP_ID} \
     -v "${NAME}-assets":/var/www/html/custom_apps/${APP_ID}/tests/assets/cache \
     ${IMAGE}

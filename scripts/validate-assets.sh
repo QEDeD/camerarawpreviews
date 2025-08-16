@@ -6,6 +6,17 @@ THRESHOLD_WARN=2500000000   # 2.5 GB
 THRESHOLD_HARD=3000000000   # 3.0 GB
 ENFORCE_COVERAGE=${ENFORCE_COVERAGE:-0}  # set to 1 to make <70% a hard failure
 
+# Guard: discourage host-side validation that would assume host cache
+if [ -z "${INSIDE_NC_CONTAINER:-}" ] && [ "${FORCE_HOST_FETCH:-}" != "1" ]; then
+    case "$(pwd)" in
+        */var/www/html/custom_apps/camerarawpreviews* ) : ;; # inside NC container mount
+        * )
+            echo "No container asset cache detected. Run inside the integration container or set FORCE_HOST_FETCH=1 to validate host cache." >&2
+            exit 1
+            ;;
+    esac
+fi
+
 python3 - <<'PY'
 import json, os, hashlib, sys
 manifest_path='tests/assets/manifest.json'
