@@ -40,6 +40,7 @@ Dev Environment (`.devcontainer`): Minimal reproducible PHP image with `gd`, `im
 - `scripts/annotate-tags.sh` / `scripts/validate-assets.sh`: Asset tag annotation & coverage validation (soft warning threshold).
 - `Makefile`: Targets for local fast tests (`test-fast`), integration with core (`integration-tests-core`), packaging, environment health (`health-core`).
  - `Makefile`: Targets for local fast tests (`test-fast`), integration with core (`integration-tests-core`), full harness (`integration-full` – includes provider listing + focused 3FR selection test), packaging, environment health (`health-core`).
+- `Makefile`: Added `coverage-all`, `scaffold-assets`, container coverage gate (optional via ENFORCE_FULL_COVERAGE=1).
 - `.devcontainer/*`: Dockerfile with `BASE_IMAGE` and `INSTALL_NODE` args, environment verification script, simplified post-create steps.
 
 ## 5. Build & Packaging Status  <!-- id:build-status updated:2025-08-14T15:35:39Z -->
@@ -74,6 +75,24 @@ echo "OK" || echo "FAIL"
 
 Artifacts: `build/trivy_app.json` (Trivy app-only scan), `.trivyignore` (excludes local Nextcloud fixture).
 
+## 6.2 Asset management & coverage (container-only)  <!-- id:assets-coverage updated:2025-08-16T16:30:00Z -->
+- Policy: Test assets live only inside the Nextcloud integration container. A named volume `${NC_NAME}-assets` is mounted at `/var/www/html/custom_apps/camerarawpreviews/tests/assets/cache`.
+- Fetch & validate (in-container): `make integration` runs fetch and validate inside the container before tests. Host runs are guarded; set `FORCE_HOST_FETCH=1` only if needed.
+- Integrity & efficiency:
+  - Pre-hash check for known SHA1s.
+  - HEAD pre-check with `If-None-Match` / `If-Modified-Since` for unknown hashes; skip download on `304` or matching validators.
+  - Streaming downloads to `.tmp`, 60s default timeout (`DOWNLOAD_TIMEOUT` override).
+  - Sidecar `tests/assets/cache/.sha1.json` stores `{sha1, etag, last_modified, size}` for entries with unknown manifest hashes.
+  - Stale/mismatched files are auto-removed and re-fetched.
+- Size limits:
+  - Per-file `size_limit` enforced from `tests/assets/manifest.json`.
+  - Global cap: hard < 3.0 GB, warn at 2.5 GB.
+- Scaffolding & coverage:
+  - Generate stubs for all supported-but-missing formats (includes INDD): `make scaffold-assets` → `build/missing-assets.template.json`.
+  - Fill `url` and `sha1` for each stub and merge into `tests/assets/manifest.json`.
+  - Check coverage: `make coverage-all` (includes INDD). In container runs, coverage is printed automatically; set `ENFORCE_FULL_COVERAGE=1 make integration` to fail on gaps.
+- Reset cache volume: `make clean-docker-assets` to force a clean re-download next run.
+
 ## 7. Deployment Test Plan (NC 31)  <!-- id:deployment-plan updated:2025-08-16T16:05:00Z -->
 1. Extract tarball to `apps` (or `apps-extra`).
 2. Enable: `occ app:enable camerarawpreviews`.
@@ -86,6 +105,10 @@ Assets policy for integration (container-only):
 - The test asset cache is stored in a container volume mounted at `/var/www/html/custom_apps/camerarawpreviews/tests/assets/cache` and does not live on the host.
 - `make integration-docker` now fetches and validates assets inside the container and enforces checksum verification; mismatches trigger re-download and removal of stale files.
 - Total asset size threshold increased to <3GB to allow testing more formats; warn at 2.5GB.
+
+Format coverage expectations:
+- Manifest should contain at least one sample for each provider-supported extension: `indd, 3fr, arw, cr2, cr3, crw, dng, erf, fff, iiq, kdc, mrw, nef, nrw, orf, ori, pef, raf, rw2, rwl, sr2, srf, srw, tif/tiff, x3f`.
+- INDD is required (preview via embedded JPEG). Add a small sample and ensure selection via PreviewManager.
 
 ## 8. Logging & Diagnostics  <!-- id:logging updated:2025-08-14T15:35:39Z -->
 Server logs include: `isAvailable check`, `Preview pipeline start`, `Selected preview tag`, `Extracted preview tag`, `Preview extracted`.
@@ -113,6 +136,7 @@ Follow-ups: Adjust integration harness to symlink/install the app so MIME mappin
 - README troubleshooting: add 3FR note & direct test script usage.
 - Digest pin base image + document reproducibility procedure.
 - Extend asset corpus (medium format RAW variants) & raise coverage threshold (>70%).
+ - Add assets for all provider-supported formats (INDD, CRW, ERF, FFF, IIQ, KDC, MRW, NRW, ORF, ORI, PEF, RW2, RWL, SR2, SRF, SRW, X3F). Use `make scaffold-assets` to generate stubs and update manifest.
 
 ## 12. Timeline Snapshot  <!-- id:timeline updated:2025-08-14T15:35:39Z -->
 2025-08-12: Viewer registration refactor + JS backoff + packaging.
@@ -122,6 +146,9 @@ Follow-ups: Adjust integration harness to symlink/install the app so MIME mappin
 Robust, race-resistant Viewer registration deployed; preview extraction validated across standard RAWs. 3FR PreviewManager path now succeeds after identifying a test-only MIME mapping omission and broadening the provider regex to include `application/octet-stream`. Broadening is an intentional hardening (guarded by extension whitelist). Remaining work centers on refining the test harness (real app install) and removing temporary manual registration & instrumentation.
 
 ## 14. Next Immediate Action (If Resumed)  <!-- id:next-action updated:2025-08-14T15:35:39Z -->
+1) Run `make scaffold-assets`, fill URLs and SHA1 for missing formats (including INDD), and merge into `tests/assets/manifest.json`.
+2) Execute `ENFORCE_FULL_COVERAGE=1 make integration` to fetch/validate in-container and hard-enforce full format coverage.
+3) If any format fails preview, add targeted test diagnostics and adjust `expectedTag`/per-file limits as needed.
 
 ## 15. TODO (Tracked Items)  <!-- id:todos created:2025-08-14T15:35:39Z -->
 Format: `[TODO][timestamp]` now shown with status icon (Legend: 🟡 open · 🔴 blocked · ✅ done). All entries below are currently open.
