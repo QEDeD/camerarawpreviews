@@ -56,7 +56,8 @@
 		"source=crp-docker-data,target=/var/lib/docker,type=volume",
 		"source=camerarawpreviews-composer-cache,target=/tmp/composer-cache,type=volume",
 		"source=/etc/localtime,target=/etc/localtime,type=bind,readonly",
-		"source=/etc/timezone,target=/etc/timezone,type=bind,readonly"
+		"source=/etc/timezone,target=/etc/timezone,type=bind,readonly",
+		"source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
 	],
 	"postCreateCommand": "/bin/bash .devcontainer/post-create.sh && npm ci || true",
 	"forwardPorts": [8080],
