@@ -4,7 +4,7 @@
 
 Integrity note: Removed corrupted duplicated header and stray embedded exiftool snippet previously present above; content below is authoritative.
 
-Last updated: 2025-08-16 (verification timestamp 2025-08-16T15:10:00+0200 CEST)
+Last updated: 2025-08-16 (verification timestamp 2025-08-16T18:10:00+0200 CEST)
 
 ## 1. Context & Problem Statement  <!-- id:context updated:2025-08-15T00:10:00Z -->
 On Nextcloud Hub 10 (31.0.0) RAW files (CR2, NEF, DNG, etc.) were downloaded instead of opening in the Viewer. Hypothesis (confirmed by behavior change after fix): race / timing issue with the Viewer `LoadViewer` event in NC 31 causing our registration script to miss the event.
@@ -40,12 +40,16 @@ Dev Environment (`.devcontainer`): Minimal reproducible PHP image with `gd`, `im
 - `scripts/annotate-tags.sh` / `scripts/validate-assets.sh`: Asset tag annotation & coverage validation (soft warning threshold).
 - `scripts/fetch-assets.sh`: Container-only guard by default; pre-hash comparison; HEAD pre-check with validators; streaming downloads to `.tmp`; 60s default timeout; stale file purge and re-fetch; sidecar `.sha1.json` with `{sha1, etag, last_modified, size}` for unknown hashes; skips empty-URL stubs.
 - `scripts/validate-assets.sh`: Container-only guard; recognizes sidecar metadata; size caps raised to warn at 2.5 GB and hard fail at 3.0 GB.
-- `scripts/run-nextcloud-container.sh`: Mounts named volume `${NC_NAME}-assets` at `tests/assets/cache` so assets live only inside container; exports `INSIDE_NC_CONTAINER=1`.
+- `scripts/run-nextcloud-container.sh`: Mounts named volume `${NC_NAME}-assets` at `tests/assets/cache` so assets live only inside container; exports `INSIDE_NC_CONTAINER=1`; replaces fixed sleep with status.php polling; pre-installs phpunit9 on first run; attempts to install php-imagick/ImageMagick and checks TIFF capability.
 - `scripts/scaffold-missing-assets.php`: Generates manifest stubs for all provider-supported but missing formats (includes INDD) to speed up asset curation.
 - `Makefile`: Targets for local fast tests (`test-fast`), integration with core (`integration-tests-core`), full harness, packaging, health. Updated `integration-docker` to fetch/validate assets inside container and run a format coverage report; added `coverage-all`, `scaffold-assets`, and `clean-docker-assets`; optional enforcement via `ENFORCE_FULL_COVERAGE=1`.
  - `Makefile`: Targets for local fast tests (`test-fast`), integration with core (`integration-tests-core`), full harness (`integration-full` – includes provider listing + focused 3FR selection test), packaging, environment health (`health-core`).
 - `Makefile`: Added `coverage-all`, `scaffold-assets`, container coverage gate (optional via ENFORCE_FULL_COVERAGE=1).
 - `.devcontainer/*`: Dockerfile with `BASE_IMAGE` and `INSTALL_NODE` args, environment verification script, simplified post-create steps.
+ - `tests/bootstrap.php`: Loads Nextcloud core from local checkout or from `/var/www/html` when running inside the container; uses `call_user_func(['OC_App','loadApp'], ...)` to avoid static analyzer noise.
+ - `tests/integration/Preview3frSelectionTest.php`: Removed manual MIME mapping injection; asserts `.3fr` resolves to `image/x-dcraw` under live Nextcloud + app enabled.
+ - `tests/MimeRegexTest.php`: Lightweight unit to keep provider regex expectations in check.
+ - `tests/assets/manifest.json`: Added scaffolding entries for all remaining formats with `labels:["MISSING_URL"]` to drive FULL coverage completion.
 
 ## 5. Build & Packaging Status  <!-- id:build-status updated:2025-08-14T15:35:39Z -->
 Command: `make appstore`
@@ -93,7 +97,7 @@ Artifacts: `build/trivy_app.json` (Trivy app-only scan), `.trivyignore` (exclude
   - Global cap: hard < 3.0 GB, warn at 2.5 GB.
 - Scaffolding & coverage:
   - Generate stubs for all supported-but-missing formats (includes INDD): `make scaffold-assets` → `build/missing-assets.template.json`.
-  - Fill `url` and `sha1` for each stub and merge into `tests/assets/manifest.json`.
+  - Fill `url` and `sha1` for each stub and merge into `tests/assets/manifest.json`. Stub entries marked with `MISSING_URL` (and `sha1: auto`) are skipped by the fetch step until populated.
   - Check coverage: `make coverage-all` (includes INDD). In container runs, coverage is printed automatically; set `ENFORCE_FULL_COVERAGE=1 make integration` to fail on gaps.
 - Reset cache volume: `make clean-docker-assets` to force a clean re-download next run.
 
@@ -118,20 +122,22 @@ Format coverage expectations:
 Server logs include: `isAvailable check`, `Preview pipeline start`, `Selected preview tag`, `Extracted preview tag`, `Preview extracted`.
 Client script logs only on terminal failure (single error). Additional granular logs intentionally server-side to avoid console noise.
 
-## 9. Current Gap (Resolved in Test Harness): PreviewManager & 3FR  <!-- id:gap-3fr updated:2025-08-14T22:12:00Z -->
-Original symptom: PreviewManager skipped 3FR while direct provider path succeeded. Instrumentation of `PreviewManager` + `Generator` plus a debug print in the integration test showed the 3FR file MIME resolved to `application/octet-stream` (not `image/x-dcraw`). Cause: in the test setup the app was not actually installed under `nextcloud/apps/`, so our `MimeTypeMapping` was never invoked and the narrowed regex (`/^(image\/x-dcraw)(;+.*)*$/`) could not match. Resolution: broadened the provider registration regex to include `application/octet-stream` (and restored `image/x-indesign`). The test also performs a manual provider registration fallback (to be removed once the app is mounted properly in tests). Extension safety: `RawPreviewBase::isAvailable` enforces a strict RAW extension whitelist, so broadening does not introduce generic octet‑stream processing.
-Deployment insight: In a real Nextcloud deployment (app enabled under `nextcloud/apps/`), `.3fr` will map to `image/x-dcraw`; the broadened regex becomes a hardening measure for future / unmapped RAW variants or configuration drift.
-Follow-ups: Adjust integration harness to symlink/install the app so MIME mapping is exercised; then remove manual registration while keeping (or documenting) the broadened regex rationale.
+## 9. Current Gap (addressed in container harness): PreviewManager & 3FR  <!-- id:gap-3fr updated:2025-08-16T18:05:00Z -->
+Original symptom: PreviewManager skipped 3FR while direct provider path succeeded. Root cause in tests: app not actually installed → mapping not active → `.3fr` resolved to `application/octet-stream`.
+Fixes: (1) Broaden provider regex to include `application/octet-stream` (with `image/x-indesign` restored). (2) Mount and enable the app inside a real Nextcloud container so `MimeTypeMapping` is exercised. (3) Remove manual mapping injection in tests and assert `.3fr → image/x-dcraw`.
+Safety: `RawPreviewBase::isAvailable` extension whitelist prevents generic octet‑stream processing.
+Deployment: In real NC, `.3fr` maps to `image/x-dcraw`; broadened regex is retained as a hardening measure.
 
-## 10. Risks & Mitigations  <!-- id:risks updated:2025-08-16T16:35:00Z -->
+## 10. Risks & Mitigations  <!-- id:risks updated:2025-08-16T18:08:00Z -->
 | Risk | Status | Mitigation |
 |------|--------|------------|
 | LoadViewer API change | Low | Fallback direct registration in place |
 | Missed edge RAW MIME (octet-stream) | Partially addressed | Regex accepts; extension whitelist limits scope |
-| TIFF preview requires Imagick | Conditional | `isAvailable` rejects when unsupported |
-| 3FR not selected by PreviewManager | Resolved (test env config) | MIME mapping not active in tests; broadened regex now matches `application/octet-stream`; plan: install app in tests to verify mapping |
+| TIFF preview requires Imagick | Mitigated in harness | Container installs php-imagick/ImageMagick and checks TIFF delegate; Makefile preflight enforces when FULL coverage is on |
+| 3FR not selected by PreviewManager | Resolved in container tests | App is enabled in a live Nextcloud container; mapping is exercised and asserted |
 | Packaging drift (base image updates) | Medium | Documented `BASE_IMAGE` arg; digest pinning deferred |
 | INDD asset/test missing | Open | Add INDD sample to manifest and assert selection via PreviewManager |
+| Docker not available in devcontainer | Known | Run container-based integration on host (Docker/Podman) or fallback to core checkout flow |
 
 ## 11. Future Work (Backlog)  <!-- id:backlog updated:2025-08-16T16:35:00Z -->
 - PreviewManager selection tracing (confirm provider registration ordering; maybe add explicit priority if API allows).
@@ -142,18 +148,19 @@ Follow-ups: Adjust integration harness to symlink/install the app so MIME mappin
 - Extend asset corpus (medium format RAW variants). Populate manifest with samples for all provider-supported formats (INDD, CRW, ERF, FFF, IIQ, KDC, MRW, NRW, ORF, ORI, PEF, RW2, RWL, SR2, SRF, SRW, X3F) using `make scaffold-assets`, then `ENFORCE_FULL_COVERAGE=1` gate in container runs.
 - README troubleshooting: document container-only asset workflow, size caps, sidecar semantics, and `scaffold-assets`/coverage usage.
 
-## 12. Timeline Snapshot  <!-- id:timeline updated:2025-08-16T16:35:00Z -->
+## 12. Timeline Snapshot  <!-- id:timeline updated:2025-08-16T18:09:00Z -->
 2025-08-12: Viewer registration refactor + JS backoff + packaging.
 2025-08-13/14: Logging, asset annotation, fast test subset, integration harness, 3FR diagnostics, devcontainer hardening, direct provider test added.
 2025-08-16: Container-only asset workflow (volume mount, host guards), fetch optimizations (pre-hash, HEAD validators, streaming, timeout), sidecar enrichment, raised size caps (<3 GB), coverage reporting/enforcement hooks, scaffolding tool, Makefile targets (`coverage-all`, `scaffold-assets`, `clean-docker-assets`).
+2025-08-16 (later): Nextcloud container runner uses status.php polling; phpunit9 pre-baked; Imagick/TIFF ensured; integration tests rely on live mapping (manual MIME injection removed). Manifest scaffold extended to all formats with `MISSING_URL` labels.
 
 ## 13. Summary Statement  <!-- id:summary updated:2025-08-14T22:12:00Z -->
 Robust, race-resistant Viewer registration deployed; preview extraction validated across standard RAWs. 3FR PreviewManager path now succeeds after identifying a test-only MIME mapping omission and broadening the provider regex to include `application/octet-stream`. Broadening is an intentional hardening (guarded by extension whitelist). Remaining work centers on refining the test harness (real app install) and removing temporary manual registration & instrumentation.
 
-## 14. Next Immediate Action (If Resumed)  <!-- id:next-action updated:2025-08-14T15:35:39Z -->
-1) Run `make scaffold-assets`, fill URLs and SHA1 for missing formats (including INDD), and merge into `tests/assets/manifest.json`.
-2) Execute `ENFORCE_FULL_COVERAGE=1 make integration` to fetch/validate in-container and hard-enforce full format coverage.
-3) If any format fails preview, add targeted test diagnostics and adjust `expectedTag`/per-file limits as needed.
+## 14. Next Immediate Action (If Resumed)  <!-- id:next-action updated:2025-08-16T18:09:00Z -->
+1) Fill URLs and SHA1 for scaffolded formats in `tests/assets/manifest.json` (INDD included).
+2) On a host with Docker/Podman: `make run-nc-container` then `ENFORCE_FULL_COVERAGE=1 make integration-docker` (assets fetched/validated in-container).
+3) If any format fails preview, add targeted test diagnostics and adjust `expectedTag`/per-file limits as needed. If Docker not available, fallback: `composer install` then `FORCE_HOST_FETCH=1 ENFORCE_FULL_COVERAGE=1 make integration-full`.
 
 ## 15. TODO (Tracked Items)  <!-- id:todos created:2025-08-14T15:35:39Z -->
 Format: `[TODO][timestamp]` now shown with status icon (Legend: 🟡 open · 🔴 blocked · ✅ done). All entries below are currently open.
@@ -209,6 +216,14 @@ Decide: pursue PreviewManager provider selection trace vs. document current limi
 - Added `coverage-all`, optional enforcement in `integration-docker` via `ENFORCE_FULL_COVERAGE=1`, and `scaffold-assets` to generate manifest stubs for missing formats (includes INDD).
 ✅ [DONE][2025-08-16T16:30:00Z] Integration-docker asset flow
 - `integration-docker` fetches and validates assets inside the container before running tests and prints coverage.
+✅ [DONE][2025-08-16T18:06:00Z] Container runner healthcheck & phpunit pre-bake
+- Replaced fixed sleep with status.php polling; installed phpunit9 inside container on first run for faster subsequent runs.
+✅ [DONE][2025-08-16T18:06:00Z] Imagick/TIFF readiness in container
+- Container script attempts to install php-imagick/ImageMagick and verifies TIFF delegate; Makefile preflight checks/enforces for FULL coverage.
+✅ [DONE][2025-08-16T18:07:00Z] Integration tests use live MIME mapping
+- Removed manual MIME mapping injection from 3FR selection test; assert `.3fr → image/x-dcraw` under live Nextcloud + app enabled.
+✅ [DONE][2025-08-16T18:08:00Z] Manifest scaffolding for all formats
+- Added stub entries with `MISSING_URL` labels for all remaining supported formats to drive FULL coverage completion.
 
 Verification note (2025-08-14T15:42:21Z): All sections reconciled against current repository state (Application.php, RawPreviewBase.php, ExiftoolRunner.php, register-viewer.js, integration tests, scripts). No undocumented code paths or drift detected; backlog items accurately reflect remaining gaps. 
 
