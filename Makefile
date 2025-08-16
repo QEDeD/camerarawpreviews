@@ -353,3 +353,14 @@ lint-js:
 	else \
 		echo "eslint not found; skipping JS lint"; \
 	fi
+
+.PHONY: phpcs phpcs-fix
+phpcs:
+	@echo "Running PHP_CodeSniffer (phpcs)..."; \
+	if [ ! -x vendor/bin/phpcs ]; then composer install --prefer-dist; fi; \
+	vendor/bin/phpcs --standard=phpcs.xml || true
+
+phpcs-fix:
+	@echo "Running phpcbf (auto-fix where possible)..."; \
+	if [ ! -x vendor/bin/phpcbf ]; then composer install --prefer-dist; fi; \
+	vendor/bin/phpcbf --standard=phpcs.xml || true
