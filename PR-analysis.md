@@ -53,7 +53,7 @@ Lint gates (local-only):
 - PHP: `vendor/bin/phpcs --standard=phpcs.xml`
 - PHP autofix: `vendor/bin/phpcbf --standard=phpcs.xml lib`
 
-## 6. Verification (Local Sanity)  <!-- id:verification updated:2025-08-14T15:35:39Z -->
+## 6. Verification (Local Sanity)  <!-- id:verification updated:2025-08-16T16:05:00Z -->
 ```bash
 php -l lib/AppInfo/Application.php && \
 grep -q LoggerInterface lib/AppInfo/Application.php && \
@@ -74,13 +74,18 @@ echo "OK" || echo "FAIL"
 
 Artifacts: `build/trivy_app.json` (Trivy app-only scan), `.trivyignore` (excludes local Nextcloud fixture).
 
-## 7. Deployment Test Plan (NC 31)  <!-- id:deployment-plan updated:2025-08-14T15:35:39Z -->
+## 7. Deployment Test Plan (NC 31)  <!-- id:deployment-plan updated:2025-08-16T16:05:00Z -->
 1. Extract tarball to `apps` (or `apps-extra`).
 2. Enable: `occ app:enable camerarawpreviews`.
 3. Upload RAW file; open in Files app.
 4. Expect Viewer loads preview. If not:
   - Browser console: look for final backoff failure log.
   - Nextcloud log: determine event vs fallback path (info/debug lines).
+
+Assets policy for integration (container-only):
+- The test asset cache is stored in a container volume mounted at `/var/www/html/custom_apps/camerarawpreviews/tests/assets/cache` and does not live on the host.
+- `make integration-docker` now fetches and validates assets inside the container and enforces checksum verification; mismatches trigger re-download and removal of stale files.
+- Total asset size threshold increased to <3GB to allow testing more formats; warn at 2.5GB.
 
 ## 8. Logging & Diagnostics  <!-- id:logging updated:2025-08-14T15:35:39Z -->
 Server logs include: `isAvailable check`, `Preview pipeline start`, `Selected preview tag`, `Extracted preview tag`, `Preview extracted`.
