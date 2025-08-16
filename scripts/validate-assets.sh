@@ -16,7 +16,7 @@ with open(manifest_path) as f:
 sidecar={}
 if os.path.exists(sidecar_path):
     try:
-        sidecar=json.load(open(sidecar_path)) or {}
+    sidecar=json.load(open(sidecar_path)) or {}
     except Exception:
         sidecar={}
 
@@ -30,6 +30,16 @@ def is_unknown_sha(sha):
     s=str(sha).lower()
     return s in ('auto','unknown','0','00','000','0000') or (len(s)==40 and set(s)=={'0'})
 
+def sidecar_entry(fn):
+    v=sidecar.get(fn)
+    if v is None:
+        return None
+    if isinstance(v, str):
+        return {'sha1': v}
+    if isinstance(v, dict):
+        return v
+    return None
+
 for entry in data:
     fn=entry['filename']; sha1=entry.get('sha1',''); exp=entry.get('expectedTag')
     p=os.path.join(cache_dir, fn)
@@ -42,13 +52,14 @@ for entry in data:
     with open(p,'rb') as fh: h=hashlib.sha1(fh.read()).hexdigest()
     expected = None if is_unknown_sha(sha1) else sha1
     if expected is None:
-        # Accept sidecar recorded hash when manifest sha is unknown
-        sc = sidecar.get(fn)
-        if sc and h!=sc:
-            wrong.append(fn)
-        elif sc is None:
+        sc = sidecar_entry(fn)
+        if sc and sc.get('sha1'):
+            if h!=sc['sha1']:
+                wrong.append(fn)
+        else:
             # Sidecar missing; record current to avoid failing validation spuriously
-            sidecar[fn]=h
+            # (keeps test runs stable while encouraging manifest pinning later)
+            sidecar[fn]={'sha1': h}
             try:
                 with open(sidecar_path,'w') as fh2:
                     json.dump(sidecar, fh2, indent=2)

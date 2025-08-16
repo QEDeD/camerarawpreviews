@@ -17,7 +17,7 @@ manifest=json.load(open(manifest_path))
 sidecar={}
 if os.path.exists(sidecar_path):
     try:
-        sidecar=json.load(open(sidecar_path)) or {}
+    sidecar=json.load(open(sidecar_path)) or {}
     except Exception:
         sidecar={}
 
@@ -33,6 +33,27 @@ def is_unknown_sha(sha):
     s=str(sha).lower()
     return s in ('auto','unknown','0','00','000','0000') or (len(s)==40 and set(s)=={'0'})
 
+def sidecar_entry(fn):
+    v=sidecar.get(fn)
+    if v is None:
+        return None
+    if isinstance(v, str):
+        # legacy format: just sha1 string
+        return {'sha1': v}
+    if isinstance(v, dict):
+        return v
+    return None
+
+def save_sidecar():
+    global updated_sidecar
+    try:
+        with open(sidecar_path,'w') as fh:
+            json.dump(sidecar, fh, indent=2)
+        print(f"Updated sidecar hashes: {sidecar_path}")
+        updated_sidecar=False
+    except Exception as e:
+        print(f"WARNING: failed saving sidecar hashes: {e}")
+
 for entry in manifest:
     fmt=(entry.get('format') or '').lower()
     if fmts and fmt not in fmts:
@@ -47,25 +68,45 @@ for entry in manifest:
 
     expect_unknown = is_unknown_sha(sha1)
     expected = None if expect_unknown else sha1
-    if expect_unknown:
-        expected = sidecar.get(fn)
+    sc = sidecar_entry(fn)
+    if expect_unknown and sc and sc.get('sha1'):
+        expected = sc.get('sha1')
 
     # If file exists, check hash and remove on mismatch to force a clean download
+    timeout=float(os.environ.get('DOWNLOAD_TIMEOUT', '60'))
     if os.path.exists(target):
         with open(target,'rb') as fh:
             existing_hash=hashlib.sha1(fh.read()).hexdigest()
         if expected and existing_hash==expected:
             print(f"OK (cached): {fn}")
             continue
-        if expected is None and fn in sidecar:
-            # Unknown in manifest, but we have a recorded sidecar hash; enforce consistency
-            if existing_hash==sidecar[fn]:
-                print(f"OK (cached, sidecar): {fn}")
-                continue
-        # Mismatch or no expectation: remove before download
+        # For unknown expected hashes, try a conditional HEAD to avoid unnecessary re-downloads
+        if expected is None and sc:
+            headers={}
+            if sc.get('etag'): headers['If-None-Match']=sc['etag']
+            if sc.get('last_modified'): headers['If-Modified-Since']=sc['last_modified']
+            try:
+                req=urllib.request.Request(url, method='HEAD', headers=headers)
+                with urllib.request.urlopen(req, timeout=timeout) as r:
+                    code=r.getcode()
+                    etag=r.headers.get('ETag')
+                    lm=r.headers.get('Last-Modified')
+                    clen=r.headers.get('Content-Length')
+                if code==304:
+                    print(f"OK (cached, 304): {fn}")
+                    continue
+                # If server didn’t send validators, fall back to re-download path
+                # If it sent validators and they match our sidecar, keep cached
+                if (etag and sc.get('etag')==etag) and (not lm or sc.get('last_modified')==lm):
+                    print(f"OK (cached, validators match): {fn}")
+                    continue
+            except Exception:
+                # HEAD failed; proceed to re-download
+                pass
+        # Mismatch or cannot confirm: remove before download
         try:
             os.remove(target)
-            print(f"Removed stale file (hash mismatch): {fn}")
+            print(f"Removed stale file (hash mismatch/changed): {fn}")
         except FileNotFoundError:
             pass
 
@@ -74,15 +115,40 @@ for entry in manifest:
     data=None; last_err=None
     for attempt in range(1, tries+1):
         try:
-            with urllib.request.urlopen(url) as r:
-                data=r.read()
+            req=urllib.request.Request(url)
+            with urllib.request.urlopen(req, timeout=timeout) as r:
+                etag=r.headers.get('ETag')
+                lm=r.headers.get('Last-Modified')
+                tmp=target + '.tmp'
+                sha=hashlib.sha1()
+                total=0
+                with open(tmp,'wb') as out:
+                    while True:
+                        chunk=r.read(1024*1024)
+                        if not chunk: break
+                        out.write(chunk)
+                        sha.update(chunk)
+                        total += len(chunk)
+            data=None
+            h=sha.hexdigest()
+            downloaded_size=total
+            # Store validators for future conditional checks
+            if expect_unknown:
+                if fn not in sidecar or not isinstance(sidecar.get(fn), dict):
+                    sidecar[fn]={'sha1': h}
+                else:
+                    sidecar[fn]['sha1']=h
+                if etag: sidecar[fn]['etag']=etag
+                if lm: sidecar[fn]['last_modified']=lm
+                sidecar[fn]['size']=downloaded_size
+                updated_sidecar=True
             break
         except Exception as e:
             last_err=e
             if attempt<tries:
                 time.sleep(backoff)
                 backoff*=2
-    if data is None:
+    if 'downloaded_size' not in locals():
         msg=f"Error downloading {fn}: {last_err}"
         if optional:
             print("Optional asset skipped - "+msg)
@@ -91,8 +157,13 @@ for entry in manifest:
             print(msg, file=sys.stderr)
             errors+=1
             continue
-    if len(data)>limit:
-        msg=f"Size too large for policy: {fn} ({len(data)} > {limit})"
+    if downloaded_size>limit:
+        # cleanup tmp
+        try:
+            os.remove(target + '.tmp')
+        except Exception:
+            pass
+        msg=f"Size too large for policy: {fn} ({downloaded_size} > {limit})"
         if optional:
             print("Optional asset skipped - "+msg)
             continue
@@ -100,10 +171,13 @@ for entry in manifest:
             print(msg, file=sys.stderr)
             errors+=1
             continue
-
-    h=hashlib.sha1(data).hexdigest()
     if not expect_unknown:
         if h!=expected:
+            # cleanup tmp
+            try:
+                os.remove(target + '.tmp')
+            except Exception:
+                pass
             msg=f"Checksum mismatch after download: {fn}"
             if optional:
                 print("Optional asset skipped - "+msg)
@@ -112,24 +186,13 @@ for entry in manifest:
                 print(msg, file=sys.stderr)
                 errors+=1
                 continue
-    else:
-        # Record discovered hash for unknown entries into sidecar
-        if sidecar.get(fn)!=h:
-            sidecar[fn]=h
-            updated_sidecar=True
-
-    with open(target,'wb') as out:
-        out.write(data)
+    # Move tmp into place
+    os.replace(target + '.tmp', target)
     print(f"Fetched: {fn}")
 
 # Persist sidecar if changed
 if updated_sidecar:
-    try:
-        with open(sidecar_path,'w') as fh:
-            json.dump(sidecar, fh, indent=2)
-        print(f"Updated sidecar hashes: {sidecar_path}")
-    except Exception as e:
-        print(f"WARNING: failed saving sidecar hashes: {e}")
+    save_sidecar()
 
 if errors>0:
     print(f"Completed with {errors} error(s)", file=sys.stderr)
