@@ -101,6 +101,12 @@ Artifacts: `build/trivy_app.json` (Trivy app-only scan), `.trivyignore` (exclude
   - Check coverage: `make coverage-all` (includes INDD). In container runs, coverage is printed automatically; set `ENFORCE_FULL_COVERAGE=1 make integration` to fail on gaps.
 - Reset cache volume: `make clean-docker-assets` to force a clean re-download next run.
 
+### Windows quickstart (host Docker Desktop)
+- Open Windows PowerShell in the repo root (not inside the devcontainer).
+- Start container: `./scripts/run-nextcloud-container.ps1`
+- Smoke test env: `./scripts/integration-smoke.ps1`
+- Full integration (optional): `ENFORCE_FULL_COVERAGE=1 make integration-docker` from WSL/devcontainer, or run the above Make target logic manually via `docker exec`.
+
 ## 7. Deployment Test Plan (NC 31)  <!-- id:deployment-plan updated:2025-08-16T16:05:00Z -->
 1. Extract tarball to `apps` (or `apps-extra`).
 2. Enable: `occ app:enable camerarawpreviews`.
