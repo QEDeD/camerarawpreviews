@@ -384,8 +384,8 @@ dev-env-verify:
 install-hooks:
 	chmod +x scripts/install-git-hooks.sh; ./scripts/install-git-hooks.sh
 
-.PHONY: lint lint-php lint-js
-lint: lint-php lint-js
+.PHONY: lint lint-php lint-js lint-json lint-phpcs
+lint: lint-php lint-js lint-json lint-phpcs
 	@echo "Lint complete."
 
 lint-php:
@@ -403,6 +403,44 @@ lint-js:
 	else \
 		echo "eslint not found; skipping JS lint"; \
 	fi
+
+.PHONY: lint-json
+lint-json:
+	@echo "Validating JSON files..."; \
+	set -e; FILES=""; \
+	for f in composer.json package.json package-lock.json tests/assets/manifest.json; do \
+		[ -f "$$f" ] && FILES="$$FILES $$f"; \
+	done; \
+	php scripts/lint-json.php $$FILES
+
+.PHONY: lint-phpcs
+lint-phpcs:
+	@echo "PHP CodeSniffer (phpcs) if available..."; \
+	if [ -x vendor/bin/phpcs ]; then vendor/bin/phpcs --standard=phpcs.xml || true; else echo 'phpcs not installed (composer install)'; fi
+
+.PHONY: lint-sh
+lint-sh:
+	@echo "ShellCheck for bash scripts (via container if available)..."; \
+	if command -v $(DOCKER) >/dev/null 2>&1; then \
+		$(DOCKER) run --rm -v $(CURDIR):/work koalaman/shellcheck:stable sh -c 'shopt -s globstar nullglob; shellcheck -x /work/scripts/**/*.sh' || true; \
+	else \
+		if command -v shellcheck >/dev/null 2>&1; then shellcheck -x scripts/*.sh || true; else echo "No docker or shellcheck; skipping"; fi; \
+	fi
+
+.PHONY: phpstan
+phpstan:
+	@echo "Running PHPStan (static analysis) if available..."; \
+	if [ ! -x vendor/bin/phpstan ]; then \
+		if command -v composer >/dev/null 2>&1; then composer install --prefer-dist; else echo "composer not found; skipping phpstan"; exit 0; fi; \
+	fi; \
+	vendor/bin/phpstan analyse --memory-limit=512M -c phpstan.neon.dist || true
+
+.PHONY: lint-deep
+lint-deep: lint lint-json lint-sh phpcs phpstan
+	@echo "Deep lint completed."
+
+.PHONY: lint-all
+lint-all: lint
 
 .PHONY: phpcs phpcs-fix
 phpcs:

@@ -6,7 +6,7 @@
     "format": "nef",
     "cameraVendor": "Nikon",
     "modelHint": "D600",
-    "size_limit": 40000000,
+  "size_limit": 40000000,
   "expectedTag": "JpgFromRaw",
     "labels": ["JpgFromRaw-candidate"]
   },
@@ -41,7 +41,7 @@
     "format": "cr2",
     "cameraVendor": "Canon",
     "modelHint": "EOS 50D",
-    "size_limit": 40000000,
+  "size_limit": 40000000,
   "expectedTag": "PreviewImage",
     "labels": ["PreviewImage-candidate"]
   },
@@ -74,7 +74,7 @@
     "format": "3fr",
     "cameraVendor": "Hasselblad",
     "modelHint": "CF132",
-    "size_limit": 50000000,
+  "size_limit": 50000000,
   "expectedTag": "ThumbnailTIFF",
     "labels": ["LargeFile","MediumFormat"]
   },
