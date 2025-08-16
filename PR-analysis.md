@@ -56,11 +56,16 @@ Command: `make appstore`
 Artifact: `build/camerarawpreviews_nextcloud.tar.gz`
 `exiftool.bin`: Ensured (static, podman, or perl wrapper fallback). Skippable locally via `SKIP_EXIFTOOL_CHECK=1`.
 
-Lint gates (local-only):
-- JS: `make lint-js` (uses local eslint if present), or `npx eslint . --ext .js,.cjs,.mjs --cache`
-- JS autofix: `npx eslint js --ext .js,.cjs,.mjs --fix`
-- PHP: `vendor/bin/phpcs --standard=phpcs.xml`
-- PHP autofix: `vendor/bin/phpcbf --standard=phpcs.xml lib`
+Linting & checks:
+- Required (default `make lint`):
+  - PHP syntax (php -l) across tracked PHP files
+  - ESLint over `js/`
+  - JSON lint for composer/package/manifest
+  - PHPCS (composer auto-installed if missing)
+- Optional/deep (`make lint-deep`):
+  - ShellCheck for shell scripts (via container if available)
+  - PHPStan static analysis (installed via composer dev-deps)
+  - Auto-fix (optional): `make phpcs-fix` for PHPCBF
 
 ## 6. Verification (Local Sanity)  <!-- id:verification updated:2025-08-16T16:05:00Z -->
 ```bash

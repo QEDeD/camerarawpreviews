@@ -384,8 +384,8 @@ dev-env-verify:
 install-hooks:
 	chmod +x scripts/install-git-hooks.sh; ./scripts/install-git-hooks.sh
 
-.PHONY: lint lint-php lint-js lint-json lint-phpcs
-lint: lint-php lint-js lint-json lint-phpcs
+.PHONY: lint lint-php lint-js lint-json phpcs
+lint: lint-php lint-js lint-json phpcs
 	@echo "Lint complete."
 
 lint-php:
@@ -413,10 +413,16 @@ lint-json:
 	done; \
 	php scripts/lint-json.php $$FILES
 
-.PHONY: lint-phpcs
-lint-phpcs:
-	@echo "PHP CodeSniffer (phpcs) if available..."; \
-	if [ -x vendor/bin/phpcs ]; then vendor/bin/phpcs --standard=phpcs.xml || true; else echo 'phpcs not installed (composer install)'; fi
+.PHONY: phpcs phpcs-fix
+phpcs:
+	@echo "Running PHP_CodeSniffer (phpcs)..."; \
+	if [ ! -x vendor/bin/phpcs ]; then composer install --prefer-dist; fi; \
+	vendor/bin/phpcs --standard=phpcs.xml
+
+phpcs-fix:
+	@echo "Running phpcbf (auto-fix where possible)..."; \
+	if [ ! -x vendor/bin/phpcbf ]; then composer install --prefer-dist; fi; \
+	vendor/bin/phpcbf --standard=phpcs.xml || true
 
 .PHONY: lint-sh
 lint-sh:
@@ -436,22 +442,12 @@ phpstan:
 	vendor/bin/phpstan analyse --memory-limit=512M -c phpstan.neon.dist || true
 
 .PHONY: lint-deep
-lint-deep: lint lint-json lint-sh phpcs phpstan
+lint-deep: lint lint-json lint-sh phpstan
 	@echo "Deep lint completed."
 
 .PHONY: lint-all
 lint-all: lint
 
-.PHONY: phpcs phpcs-fix
-phpcs:
-	@echo "Running PHP_CodeSniffer (phpcs)..."; \
-	if [ ! -x vendor/bin/phpcs ]; then composer install --prefer-dist; fi; \
-	vendor/bin/phpcs --standard=phpcs.xml || true
-
-phpcs-fix:
-	@echo "Running phpcbf (auto-fix where possible)..."; \
-	if [ ! -x vendor/bin/phpcbf ]; then composer install --prefer-dist; fi; \
-	vendor/bin/phpcbf --standard=phpcs.xml || true
 
 # Security audit focused on app-level dependencies only (skip local Nextcloud fixture)
 .PHONY: audit audit-app
