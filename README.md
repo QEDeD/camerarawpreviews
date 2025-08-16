@@ -55,6 +55,8 @@ Authoritative principle: If a check matters, it must be runnable with a single l
 ### Dev Container Usage
 Open repository in supported editor (e.g. VS Code) and let the Dev Container build. All prerequisites (php, gd/imagick, docker-in-docker) are provisioned. Quality gate commands above are identical inside the container.
 
+Note on timezone: The devcontainer inherits the host timezone automatically (TZ env + /etc/localtime and /etc/timezone mounts). If TZ is not set by the host, the shell auto-detects from /etc/localtime. To override, export TZ (e.g., `export TZ=Europe/Berlin`).
+
 ### Adding New Checks
 When proposing a new quality gate, add a Make target and document it here. Do not rely on hidden scripts or external service configuration.
 
