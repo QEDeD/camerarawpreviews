@@ -25,7 +25,29 @@ if ! "$DOCKER_BIN" ps -a --format '{{.Names}}' | grep -q "^${NAME}$"; then
     -v "${APP_PATH}":/var/www/html/custom_apps/${APP_ID} \
     -v "${NAME}-assets":/var/www/html/custom_apps/${APP_ID}/tests/assets/cache \
     ${IMAGE}
-  echo "Waiting for initial setup (approx 25s)..."; sleep 25
+  echo "Waiting for Nextcloud to complete initial setup..."
+  # Healthcheck: wait up to ~120s for status.php to report installed=true
+  ready=0
+  for i in $(seq 1 120); do
+    code=$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8080/status.php || true)
+    if [ "$code" = "200" ]; then
+      if curl -s http://localhost:8080/status.php | grep -q '"installed":true'; then
+        ready=1
+        break
+      fi
+    fi
+    sleep 1
+  done
+  if [ "$ready" = "1" ]; then
+    echo "Nextcloud is ready."
+  else
+    echo "WARNING: Nextcloud did not report ready within timeout; continuing anyway."
+  fi
+  # Pre-bake phpunit9 once inside the container for future runs
+  if ! "$DOCKER_BIN" exec ${NAME} bash -lc 'command -v phpunit9 >/dev/null 2>&1'; then
+    echo "Installing phpunit9 inside container..."
+    "$DOCKER_BIN" exec ${NAME} bash -lc 'curl -Ls https://phar.phpunit.de/phpunit-9.phar -o /usr/local/bin/phpunit9 && chmod +x /usr/local/bin/phpunit9' || true
+  fi
   "$DOCKER_BIN" exec -u www-data ${NAME} php occ app:enable ${APP_ID} || true
 else
   echo "Container ${NAME} already exists. Starting..."
