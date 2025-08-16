@@ -91,13 +91,13 @@
     "labels": ["TIFF-fallback"]
   }
   ,
-  {"url":"","filename":"sample.indd","sha1":"auto","format":"indd","cameraVendor":"Adobe","modelHint":"InDesign","size_limit":50000000,"expectedTag":null,"labels":["MISSING_URL"]}
+  {"url":"","filename":"sample.indd","sha1":"auto","format":"indd","cameraVendor":"Adobe","modelHint":"InDesign","size_limit":50000000,"optional":true,"expectedTag":null,"labels":["MISSING_URL"]}
   ,
   {"url":"","filename":"sample.crw","sha1":"auto","format":"crw","cameraVendor":"Canon","modelHint":"CRW","size_limit":50000000,"expectedTag":null,"labels":["MISSING_URL"]}
   ,
   {"url":"","filename":"sample.erf","sha1":"auto","format":"erf","cameraVendor":"Epson","modelHint":"ERF","size_limit":50000000,"expectedTag":null,"labels":["MISSING_URL"]}
   ,
-  {"url":"","filename":"sample.fff","sha1":"auto","format":"fff","cameraVendor":"Hasselblad","modelHint":"FFF","size_limit":50000000,"expectedTag":null,"labels":["MISSING_URL"]}
+  {"url":"","filename":"sample.fff","sha1":"auto","format":"fff","cameraVendor":"Hasselblad","modelHint":"FFF","size_limit":120000000,"expectedTag":null,"labels":["MISSING_URL"]}
   ,
   {"url":"","filename":"sample.iiq","sha1":"auto","format":"iiq","cameraVendor":"Phase One","modelHint":"IIQ","size_limit":50000000,"expectedTag":null,"labels":["MISSING_URL"]}
   ,
