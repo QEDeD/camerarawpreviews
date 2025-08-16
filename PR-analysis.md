@@ -33,6 +33,8 @@ Dev Environment (`.devcontainer`): Minimal reproducible PHP image with `gd`, `im
 - `tests/RawPreviewBaseTagTest.php`: Unit tests for priority tag selection + failure path.
 - `tests/integration/PreviewFlowTest.php`: End-to-end preview generation with tag expectation checking (skips problematic TIFF preview edge if needed).
 - `tests/integration/DirectProvider3frTest.php`: Direct invocation confirms 3FR extraction succeeds (isolation vs PreviewManager selection issue).
+- `tests/integration/Preview3frSelectionTest.php`: Confirms PreviewManager selects our provider for 3FR with the broadened provider regex.
+- `tests/integration/PreviewKeyFormatsSelectionTest.php`: Sanity-checks key RAW formats (CR2/NEF/DNG mandatory; ARW/CR3 optional when assets exist).
 - `scripts/diagnose-3fr.php`: Ad-hoc diagnostic confirming provider output for 3FR.
 - `scripts/list-providers.php`: Reflection-based provider enumeration and availability probe; also attempts a standard preview fetch and reports result and detected MIME.
 - `scripts/annotate-tags.sh` / `scripts/validate-assets.sh`: Asset tag annotation & coverage validation (soft warning threshold).
@@ -44,6 +46,12 @@ Dev Environment (`.devcontainer`): Minimal reproducible PHP image with `gd`, `im
 Command: `make appstore`
 Artifact: `build/camerarawpreviews_nextcloud.tar.gz`
 `exiftool.bin`: Ensured (static, podman, or perl wrapper fallback). Skippable locally via `SKIP_EXIFTOOL_CHECK=1`.
+
+Lint gates (local-only):
+- JS: `make lint-js` (uses local eslint if present), or `npx eslint . --ext .js,.cjs,.mjs --cache`
+- JS autofix: `npx eslint js --ext .js,.cjs,.mjs --fix`
+- PHP: `vendor/bin/phpcs --standard=phpcs.xml`
+- PHP autofix: `vendor/bin/phpcbf --standard=phpcs.xml lib`
 
 ## 6. Verification (Local Sanity)  <!-- id:verification updated:2025-08-14T15:35:39Z -->
 ```bash
