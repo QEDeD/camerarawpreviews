@@ -68,7 +68,10 @@ for entry in manifest:
     fmt=(entry.get('format') or '').lower()
     if fmts and fmt not in fmts:
         continue
-    url=entry['url']; fn=entry['filename']; sha1=entry.get('sha1',''); limit=entry['size_limit']; optional=entry.get('optional', False)
+    url=entry.get('url',''); fn=entry['filename']; sha1=entry.get('sha1',''); limit=entry['size_limit']; optional=entry.get('optional', False)
+    if not url:
+        print(f"Skipping {fn}: missing URL in manifest")
+        continue
     # encode spaces if author left unencoded
     if ' ' in url:
         parts=url.split('/')

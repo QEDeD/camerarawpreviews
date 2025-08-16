@@ -75,3 +75,5 @@ Purpose: Keep our docs’ claimed support in sync with automated tests. Each ite
 Notes:
 - Our provider’s `isAvailable` whitelist covers the full list above. Add assets incrementally (respect the 400MB cap) and reference them in `tests/assets/manifest.json` with `expectedTag` when possible.
 - INDD support relies on JPEG preview extraction; verify via PreviewManager path as part of the integration suite.
+ - To scaffold missing entries: `make scaffold-assets` (fills `build/missing-assets.template.json`).
+ - To check coverage: `make coverage-all`. To enforce in container runs: `ENFORCE_FULL_COVERAGE=1 make integration`.
