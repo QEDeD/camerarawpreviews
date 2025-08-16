@@ -23,7 +23,7 @@ class RawPreviewIProviderV2 extends RawPreviewBase implements IProviderV2
     public function isAvailable(FileInfo $file): bool
     {
         $res = parent::isAvailable($file);
-        if (isset($this->logger) && method_exists($file,'getName')) {
+        if (isset($this->logger) && method_exists($file, 'getName')) {
             $this->logger->info('Provider isAvailable invoked', [
                 'app' => $this->appName,
                 'name' => $file->getName(),
@@ -36,7 +36,7 @@ class RawPreviewIProviderV2 extends RawPreviewBase implements IProviderV2
 
     public function getThumbnail(File $file, int $maxX, int $maxY): ?IImage
     {
-        if (isset($this->logger) && method_exists($file,'getName')) {
+        if (isset($this->logger) && method_exists($file, 'getName')) {
             $this->logger->info('Provider getThumbnail start', [
                 'app' => $this->appName,
                 'name' => $file->getName(),

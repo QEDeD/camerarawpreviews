@@ -2,7 +2,6 @@
 
 namespace OCA\CameraRawPreviews;
 
-
 use Exception;
 use Imagick;
 use OCP\Files\File;
@@ -22,11 +21,11 @@ class RawPreviewBase
     protected $tmpFiles = [];
     protected ExiftoolRunner $runner;
 
-        public function __construct(LoggerInterface $logger, ?ExiftoolRunner $runner = null)
+    public function __construct(LoggerInterface $logger, ?ExiftoolRunner $runner = null)
     {
         $this->logger = $logger;
         $this->appName = 'camerarawpreviews';
-            $this->runner = $runner ?: new ExiftoolRunner($logger, $this->appName);
+        $this->runner = $runner ?: new ExiftoolRunner($logger, $this->appName);
     }
 
     /**
@@ -35,7 +34,7 @@ class RawPreviewBase
     public function getMimeType(): string
     {
     // Also allow application/octet-stream to catch RAW files not recognized by core yet; filtered by extension in isAvailable
-    return '/^((image\/x-dcraw)|(image\/x-indesign)|(application\/octet-stream))(;+.*)*$/';
+        return '/^((image\/x-dcraw)|(image\/x-indesign)|(application\/octet-stream))(;+.*)*$/';
     }
 
     /**
@@ -47,11 +46,17 @@ class RawPreviewBase
         $ext = strtolower($file->getExtension());
         $supported = [ 'indd','3fr','arw','cr2','cr3','crw','dng','erf','fff','iiq','kdc','mrw','nef','nrw','orf','ori','pef','raf','rw2','rwl','sr2','srf','srw','tif','tiff','x3f' ];
         $ok = true;
-        if (!in_array($ext, $supported, true)) { $ok = false; }
-        if ($ok && ($ext === 'tiff' || $ext === 'tif') && !$this->isTiffCompatible()) { $ok = false; }
-        if ($ok && $file->getSize() <= 0) { $ok = false; }
+        if (!in_array($ext, $supported, true)) {
+            $ok = false;
+        }
+        if ($ok && ($ext === 'tiff' || $ext === 'tif') && !$this->isTiffCompatible()) {
+            $ok = false;
+        }
+        if ($ok && $file->getSize() <= 0) {
+            $ok = false;
+        }
         // Log decision path (debug level)
-        if (method_exists($file,'getName')) {
+        if (method_exists($file, 'getName')) {
             $this->logger->debug('isAvailable check', [
                 'app' => $this->appName,
                 'name' => $file->getName(),
@@ -65,7 +70,7 @@ class RawPreviewBase
 
     protected function getThumbnailInternal(File $file, int $maxX, int $maxY): ?IImage
     {
-    $overallStart = microtime(true);
+        $overallStart = microtime(true);
         try {
             $localPath = $this->getLocalFile($file);
         } catch (Exception $e) {
@@ -73,7 +78,7 @@ class RawPreviewBase
             return null;
         }
 
-    try {
+        try {
             $this->logger->debug('Preview pipeline start', [
                 'app' => $this->appName,
                 'name' => $file->getName(),
@@ -82,50 +87,50 @@ class RawPreviewBase
                 'maxX' => $maxX,
                 'maxY' => $maxY,
             ]);
-            $tagData = $this->getBestPreviewTag($localPath);
-            $previewTag = $tagData['tag'];
-            $this->logger->debug('Selected preview tag', [
+                $tagData = $this->getBestPreviewTag($localPath);
+                $previewTag = $tagData['tag'];
+                $this->logger->debug('Selected preview tag', [
                 'app' => $this->appName,
                 'name' => $file->getName(),
                 'tag' => $previewTag,
                 'ext' => $tagData['ext']
-            ]);
+                ]);
 
 
             if ($previewTag === 'SourceFile') {
                 // load the original file as fallback when TIFF has no preview embedded
                 $previewImageTmpPath = $localPath;
                 $this->logger->debug('Using SourceFile directly (no embedded preview)', [
-                    'app' => $this->appName,
-                    'name' => $file->getName()
+                'app' => $this->appName,
+                'name' => $file->getName()
                 ]);
             } else {
-    $extractStart = microtime(true);
-        $previewImageTmpPath = sys_get_temp_dir() . '/' . md5($localPath . uniqid('', true)) . '.' . $tagData['ext'];
+                $extractStart = microtime(true);
+                $previewImageTmpPath = sys_get_temp_dir() . '/' . md5($localPath . uniqid('', true)) . '.' . $tagData['ext'];
                 $this->tmpFiles[] = $previewImageTmpPath;
 
                 //extract preview image using exiftool to file
-        $this->runner->extractPreviewTag($localPath, $previewTag, $previewImageTmpPath);
+                $this->runner->extractPreviewTag($localPath, $previewTag, $previewImageTmpPath);
                 if (filesize($previewImageTmpPath) < 100) {
                     throw new Exception('Unable to extract valid preview data');
                 }
 
                 //update previewImageTmpPath  with orientation data
-        $this->runner->applyOrientation($localPath, $previewImageTmpPath);
+                $this->runner->applyOrientation($localPath, $previewImageTmpPath);
                 $extractElapsedMs = (microtime(true) - $extractStart) * 1000;
                 $this->logger->debug('Extracted preview tag', [
-                    'app' => $this->appName,
-                    'name' => $file->getName(),
-                    'tag' => $previewTag,
-                    'tmp' => $previewImageTmpPath,
-                    'bytes' => @filesize($previewImageTmpPath) ?: 0,
-                    'extract_ms' => isset($extractElapsedMs) ? round($extractElapsedMs,2) : null
-                ]);
+                'app' => $this->appName,
+                'name' => $file->getName(),
+                'tag' => $previewTag,
+                'tmp' => $previewImageTmpPath,
+                'bytes' => @filesize($previewImageTmpPath) ?: 0,
+                'extract_ms' => isset($extractElapsedMs) ? round($extractElapsedMs, 2) : null
+                    ]);
             }
 
-            $image = new Image;
+                $image = new Image();
 
-            // we have checked for tiff support in getBestPreviewTag
+                // we have checked for tiff support in getBestPreviewTag
             if ($tagData['ext'] === 'tiff') {
                 $imagick = new Imagick($previewImageTmpPath);
                 $imagick->autoOrient();
@@ -135,12 +140,12 @@ class RawPreviewBase
                 $image->loadFromFile($previewImageTmpPath);
             }
 
-            $image->fixOrientation();
-            $image->scaleDownToFit($maxX, $maxY);
-            $previewBytes = @filesize($previewImageTmpPath) ?: 0;
-            $overallElapsedMs = (microtime(true) - $overallStart) * 1000;
+                $image->fixOrientation();
+                $image->scaleDownToFit($maxX, $maxY);
+                $previewBytes = @filesize($previewImageTmpPath) ?: 0;
+                $overallElapsedMs = (microtime(true) - $overallStart) * 1000;
 
-            $this->logger->debug('Preview extracted', [
+                $this->logger->debug('Preview extracted', [
                 'app' => $this->appName,
                 'fileSize' => $file->getSize(),
                 'previewBytes' => $previewBytes,
@@ -149,15 +154,15 @@ class RawPreviewBase
                 't_ms' => round($overallElapsedMs, 2),
                 'extraction_ms' => isset($extractElapsedMs) ? round($extractElapsedMs, 2) : null,
                 'sourceIsPreview' => $previewTag === 'SourceFile'
-            ]);
+                ]);
 
-            $this->cleanTmpFiles();
+                $this->cleanTmpFiles();
 
-            //check if image object is valid
+                //check if image object is valid
             if (!$image->valid()) {
                 return null;
             }
-            return $image;
+                return $image;
         } catch (Exception $e) {
             $this->logger->warning($e->getMessage(), ['app' => $this->appName, 'exception' => $e]);
 
@@ -183,8 +188,12 @@ class RawPreviewBase
             $in = $file->fopen('r');
             $out = fopen($absPath, 'w');
             if ($in === false || $out === false) {
-                if (is_resource($in)) { fclose($in); }
-                if (is_resource($out)) { fclose($out); }
+                if (is_resource($in)) {
+                    fclose($in);
+                }
+                if (is_resource($out)) {
+                    fclose($out);
+                }
                 throw new \RuntimeException('Unable to open streams for temporary copy');
             }
             stream_copy_to_stream($in, $out);
@@ -204,7 +213,7 @@ class RawPreviewBase
      */
     protected function getBestPreviewTag(string $tmpPath): array
     {
-    $previewData = $this->runner->runJsonPreviewData($tmpPath);
+        $previewData = $this->runner->runJsonPreviewData($tmpPath);
         $fileType = $previewData[0]['FileType'] ?? 'n/a';
 
         // potential tags in priority

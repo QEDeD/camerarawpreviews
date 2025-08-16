@@ -1,14 +1,17 @@
 <?php
+
 namespace OCA\CameraRawPreviews\AppInfo;
 
 use OCP\Files\IMimeTypeLoader;
 use OCP\Files\IMimeTypeMapping;
 
-class MimeTypeMapping implements IMimeTypeMapping {
+class MimeTypeMapping implements IMimeTypeMapping
+{
     /**
      * @param IMimeTypeLoader $loader
      */
-    public function getMimeTypeMappings(IMimeTypeLoader $loader): void {
+    public function getMimeTypeMappings(IMimeTypeLoader $loader): void
+    {
         $mimesToDetect = [
             'indd' => ['image/x-indesign'],
             '3fr' => ['image/x-dcraw'],

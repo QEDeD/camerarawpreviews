@@ -20,7 +20,8 @@ class Application extends App implements IBootstrap
         parent::__construct(self::APP_ID);
     }
 
-    public function register(IRegistrationContext $context): void {
+    public function register(IRegistrationContext $context): void
+    {
         include_once __DIR__ . '/../../vendor/autoload.php';
         $this->registerProvider($context);
     }
@@ -57,15 +58,18 @@ class Application extends App implements IBootstrap
         // (relies on autoloaded OCA\CameraRawPreviews\AppInfo\MimeTypeMapping implementing IMimeTypeMapping)
         // Narrow regex to our RAW mapping only; avoids accidental generic matches
     // Broaden regex to allow application/octet-stream (uncategorized RAW uploads) and InDesign again
-    $context->registerPreviewProvider(RawPreviewIProviderV2::class, '/^((image\/x-dcraw)|(image\/x-indesign)|(application\/octet-stream))(;+.*)*$/');
+        $context->registerPreviewProvider(RawPreviewIProviderV2::class, '/^((image\/x-dcraw)|(image\/x-indesign)|(application\/octet-stream))(;+.*)*$/');
         // Temporary debug marker (remove after 3FR selection issue resolved)
         try {
             $logger = $this->getContainer()->getServer()->get(LoggerInterface::class);
             $logger->info('Registered RawPreviewIProviderV2 with regex image/x-dcraw', ['app' => self::APP_ID]);
-        } catch (\Throwable $e) { /* ignore logging failures */ }
+        } catch (\Throwable $e) {
+/* ignore logging failures */
+        }
     }
 
-    public function boot(IBootContext $context): void {
+    public function boot(IBootContext $context): void
+    {
         $this->registerScripts($context);
         $this->ensureProviderRegistered($context);
     }
@@ -76,13 +80,18 @@ class Application extends App implements IBootstrap
      * the PreviewManager's internal provider list so selection can consider it.
      * This is a temporary workaround aiding integration test reliability.
      */
-    private function ensureProviderRegistered(IBootContext $context): void {
+    private function ensureProviderRegistered(IBootContext $context): void
+    {
         try {
             $sc = $context->getServerContainer();
             $logger = $sc->get(LoggerInterface::class);
-            if (!method_exists($sc, 'getPreviewManager')) { return; }
+            if (!method_exists($sc, 'getPreviewManager')) {
+                return;
+            }
             $pm = $sc->getPreviewManager();
-            if (!$pm) { return; }
+            if (!$pm) {
+                return;
+            }
             $found = false;
             $ref = new \ReflectionObject($pm);
             foreach ($ref->getProperties() as $prop) {
@@ -90,11 +99,16 @@ class Application extends App implements IBootstrap
                 $val = $prop->getValue($pm);
                 if (is_array($val)) {
                     foreach ($val as $prov) {
-                        if (is_object($prov) && get_class($prov) === RawPreviewIProviderV2::class) { $found = true; break 2; }
+                        if (is_object($prov) && get_class($prov) === RawPreviewIProviderV2::class) {
+                            $found = true;
+                            break 2;
+                        }
                     }
                 }
             }
-            if ($found) { return; }
+            if ($found) {
+                return;
+            }
             // Create provider instance
             $provider = new RawPreviewIProviderV2($sc->get(LoggerInterface::class));
             // Attempt to append into first array-like provider property
@@ -110,7 +124,10 @@ class Application extends App implements IBootstrap
             }
             $logger->info('Unable to inject provider (no suitable property found)', ['app' => self::APP_ID]);
         } catch (\Throwable $e) {
-            try { $logger?->warning('Provider injection failed: '.$e->getMessage(), ['app'=>self::APP_ID]); } catch (\Throwable $ignore) {}
+            try {
+                $logger?->warning('Provider injection failed: ' . $e->getMessage(), ['app' => self::APP_ID]);
+            } catch (\Throwable $ignore) {
+            }
         }
     }
 }
