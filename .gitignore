@@ -1,3 +1,5 @@
+# Local developer artifacts (do not commit)
+scout-image.tar
 /vendor/
 /build/artifacts
 /build/*tar.gz
