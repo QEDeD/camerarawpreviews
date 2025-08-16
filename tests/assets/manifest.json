@@ -90,4 +90,40 @@
     "expectedTag": null,
     "labels": ["TIFF-fallback"]
   }
+  ,
+  {"url":"","filename":"sample.indd","sha1":"auto","format":"indd","cameraVendor":"Adobe","modelHint":"InDesign","size_limit":50000000,"expectedTag":null,"labels":["MISSING_URL"]}
+  ,
+  {"url":"","filename":"sample.crw","sha1":"auto","format":"crw","cameraVendor":"Canon","modelHint":"CRW","size_limit":50000000,"expectedTag":null,"labels":["MISSING_URL"]}
+  ,
+  {"url":"","filename":"sample.erf","sha1":"auto","format":"erf","cameraVendor":"Epson","modelHint":"ERF","size_limit":50000000,"expectedTag":null,"labels":["MISSING_URL"]}
+  ,
+  {"url":"","filename":"sample.fff","sha1":"auto","format":"fff","cameraVendor":"Hasselblad","modelHint":"FFF","size_limit":50000000,"expectedTag":null,"labels":["MISSING_URL"]}
+  ,
+  {"url":"","filename":"sample.iiq","sha1":"auto","format":"iiq","cameraVendor":"Phase One","modelHint":"IIQ","size_limit":50000000,"expectedTag":null,"labels":["MISSING_URL"]}
+  ,
+  {"url":"","filename":"sample.kdc","sha1":"auto","format":"kdc","cameraVendor":"Kodak","modelHint":"KDC","size_limit":50000000,"expectedTag":null,"labels":["MISSING_URL"]}
+  ,
+  {"url":"","filename":"sample.mrw","sha1":"auto","format":"mrw","cameraVendor":"Minolta","modelHint":"MRW","size_limit":50000000,"expectedTag":null,"labels":["MISSING_URL"]}
+  ,
+  {"url":"","filename":"sample.nrw","sha1":"auto","format":"nrw","cameraVendor":"Nikon","modelHint":"NRW","size_limit":50000000,"expectedTag":null,"labels":["MISSING_URL"]}
+  ,
+  {"url":"","filename":"sample.orf","sha1":"auto","format":"orf","cameraVendor":"Olympus","modelHint":"ORF","size_limit":50000000,"expectedTag":null,"labels":["MISSING_URL"]}
+  ,
+  {"url":"","filename":"sample.ori","sha1":"auto","format":"ori","cameraVendor":"Olympus","modelHint":"ORI","size_limit":50000000,"expectedTag":null,"labels":["MISSING_URL"]}
+  ,
+  {"url":"","filename":"sample.pef","sha1":"auto","format":"pef","cameraVendor":"Pentax","modelHint":"PEF","size_limit":50000000,"expectedTag":null,"labels":["MISSING_URL"]}
+  ,
+  {"url":"","filename":"sample.rw2","sha1":"auto","format":"rw2","cameraVendor":"Panasonic","modelHint":"RW2","size_limit":50000000,"expectedTag":null,"labels":["MISSING_URL"]}
+  ,
+  {"url":"","filename":"sample.rwl","sha1":"auto","format":"rwl","cameraVendor":"Leica","modelHint":"RWL","size_limit":50000000,"expectedTag":null,"labels":["MISSING_URL"]}
+  ,
+  {"url":"","filename":"sample.sr2","sha1":"auto","format":"sr2","cameraVendor":"Sony","modelHint":"SR2","size_limit":50000000,"expectedTag":null,"labels":["MISSING_URL"]}
+  ,
+  {"url":"","filename":"sample.srf","sha1":"auto","format":"srf","cameraVendor":"Sony","modelHint":"SRF","size_limit":50000000,"expectedTag":null,"labels":["MISSING_URL"]}
+  ,
+  {"url":"","filename":"sample.srw","sha1":"auto","format":"srw","cameraVendor":"Samsung","modelHint":"SRW","size_limit":50000000,"expectedTag":null,"labels":["MISSING_URL"]}
+  ,
+  {"url":"","filename":"sample.tif","sha1":"auto","format":"tif","cameraVendor":"Sample","modelHint":"TIFF","size_limit":10000000,"expectedTag":null,"labels":["MISSING_URL"]}
+  ,
+  {"url":"","filename":"sample.x3f","sha1":"auto","format":"x3f","cameraVendor":"Sigma","modelHint":"X3F","size_limit":50000000,"expectedTag":null,"labels":["MISSING_URL"]}
 ]

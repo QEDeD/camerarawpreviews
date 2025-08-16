@@ -53,6 +53,30 @@ else
   echo "Container ${NAME} already exists. Starting..."
   "$DOCKER_BIN" start ${NAME} >/dev/null
 fi
+\n+# Ensure Imagick (with TIFF support) is available for full-format testing
+echo "Ensuring Imagick + TIFF support inside container..."
+"$DOCKER_BIN" exec ${NAME} bash -lc '
+  set -e
+  NEED_IMAGICK=0
+  php -r "exit((int)!extension_loaded(\"imagick\"));" || NEED_IMAGICK=1
+  if [ "$NEED_IMAGICK" -eq 1 ]; then
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update -y >/dev/null 2>&1 || true
+    apt-get install -y --no-install-recommends php-imagick imagemagick >/dev/null 2>&1 || true
+    phpenmod imagick >/dev/null 2>&1 || true
+  fi
+  # Check TIFF delegate
+  if php -r "exit((int)!extension_loaded('imagick'));"; then
+    if php -r "exit((int)(count(\\Imagick::queryformats('TIFF'))>0));"; then
+      echo "Imagick TIFF support: OK"
+    else
+      echo "WARNING: Imagick TIFF not supported (TIFF tests may skip)" >&2
+    fi
+  else
+    echo "WARNING: Imagick extension not available (some tests may skip)" >&2
+  fi
+  service apache2 reload >/dev/null 2>&1 || apachectl -k graceful >/dev/null 2>&1 || true
+'
 echo "Ensuring app enabled..."
 "$DOCKER_BIN" exec -u www-data ${NAME} php occ app:enable ${APP_ID} >/dev/null 2>&1 || true
 cat <<EOF

@@ -168,6 +168,14 @@ integration-docker: ensure-exiftool-bin run-nc-container
 	# Run only integration tests (unit tests already covered by test-fast locally)
 	CID=$$($(DOCKER) ps --format '{{.ID}} {{.Names}}' | awk '/nc-dev$$/{print $$1}'); \
 	if [ -z "$$CID" ]; then echo 'Nextcloud container not running (run make run-nc-container)'; exit 1; fi; \
+	# Preflight: ensure Imagick TIFF support when enforcing full coverage
+	if [ -n "$$ENFORCE_FULL_COVERAGE" ] && [ "$$ENFORCE_FULL_COVERAGE" = "1" ]; then \
+		if ! $(DOCKER) exec $$CID bash -lc "php -r 'exit((int)!(extension_loaded(\\\"imagick\\\") && count(\\\\Imagick::queryformats(\\\"TIFF\\\"))>0));'"; then \
+			echo 'ERROR: Imagick TIFF support not available in container; cannot enforce full coverage.' >&2; exit 1; \
+		fi; \
+	else \
+		$(DOCKER) exec $$CID bash -lc "php -r 'exit((int)!(extension_loaded(\\\"imagick\\\") && count(\\\\Imagick::queryformats(\\\"TIFF\\\"))>0));'" || echo 'WARNING: Imagick TIFF not available; TIFF tests may skip.'; \
+	fi; \
 	# Fetch and validate assets INSIDE container so they don't live on host
 	$(DOCKER) exec --workdir /var/www/html/custom_apps/camerarawpreviews $$CID bash -lc 'chmod +x scripts/fetch-assets.sh scripts/validate-assets.sh && ./scripts/fetch-assets.sh && ./scripts/validate-assets.sh'; \
 	# Report format coverage (includes INDD) without failing the build yet
