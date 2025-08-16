@@ -29,15 +29,7 @@ class Preview3frSelectionTest extends TestCase {
         if (class_exists('OC_App')) { \OC_App::loadApp('camerarawpreviews'); }
         $this->userFolder = $this->server->getUserFolder('admin');
         $this->previewManager = $this->server->getPreviewManager();
-        // Ensure MIME mapping active (test harness fallback if bootstrap timing missed)
-        try {
-            $mtLoader = \OC::$server->getMimeTypeLoader();
-            $probe = $mtLoader->getMimetype('foo.3fr');
-            if ($probe === 'application/octet-stream') {
-                $mapping = new \OCA\CameraRawPreviews\AppInfo\MimeTypeMapping();
-                $mapping->getMimeTypeMappings($mtLoader);
-            }
-        } catch (\Throwable $e) { /* ignore */ }
+    // No manual MIME mapping injection here; we rely on the app being enabled in a real Nextcloud instance
     }
 
     public function test3frPreviewGenerated() {
@@ -50,7 +42,7 @@ class Preview3frSelectionTest extends TestCase {
     // Debug: record mime type resolved by Nextcloud for 3FR file
     $mime = $file->getMimeType();
     fwrite(STDERR, "[DEBUG] 3FR file mime: $mime\n");
-        $this->assertTrue(in_array($mime, ['image/x-dcraw','application/octet-stream'], true), 'Unexpected MIME for 3FR');
+        $this->assertSame('image/x-dcraw', $mime, '3FR mapping not applied (expected image/x-dcraw)');
         try {
             $preview = $this->previewManager->getPreview($file, 180, 180);
         } catch (NotFoundException $e) {

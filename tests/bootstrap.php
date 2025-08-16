@@ -12,7 +12,7 @@ if (file_exists($autoload)) {
 }
 
 $coreDir = __DIR__ . '/../nextcloud-placeholder'; // placeholder for search
-// Try relative path to local Nextcloud extraction
+// Try relative path to local Nextcloud extraction (developer flow)
 $localNcBase = __DIR__ . '/../nextcloud';
 if (is_dir($localNcBase)) {
 	@ini_set('memory_limit','512M');
@@ -21,7 +21,19 @@ if (is_dir($localNcBase)) {
 		require_once $baseFile; // initializes Nextcloud base
 		if (class_exists('OC_App')) {
 			// Minimal setup: register app paths
-			\OC_App::loadApp('camerarawpreviews');
+			\call_user_func(['OC_App','loadApp'], 'camerarawpreviews');
+		}
+	}
+}
+
+// Container flow: include core base from /var/www/html when running inside NC container
+if (!class_exists('OC_App')) {
+	$containerBase = '/var/www/html/lib/base.php';
+	if (is_file($containerBase)) {
+		@ini_set('memory_limit','512M');
+		require_once $containerBase;
+		if (class_exists('OC_App')) {
+			\call_user_func(['OC_App','loadApp'], 'camerarawpreviews');
 		}
 	}
 }
