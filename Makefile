@@ -190,6 +190,16 @@ integration-docker: ensure-exiftool-bin run-nc-container
 	fi; \
 	$(DOCKER) exec --workdir /var/www/html/custom_apps/camerarawpreviews --user www-data $$CID phpunit9 --bootstrap tests/bootstrap.php tests/integration || true
 
+.PHONY: integration-smoke-docker
+integration-smoke-docker: run-nc-container
+	CID=$$($(DOCKER) ps --format '{{.ID}} {{.Names}}' | awk '/nc-dev$$/{print $$1}'); \
+	if [ -z "$$CID" ]; then echo 'Nextcloud container not running (run make run-nc-container)'; exit 1; fi; \
+	if ! $(DOCKER) exec $$CID bash -c 'command -v phpunit9 >/dev/null 2>&1'; then \
+		echo 'Installing phpunit9 inside container...'; \
+		$(DOCKER) exec $$CID bash -c 'curl -Ls https://phar.phpunit.de/phpunit-9.phar -o /usr/local/bin/phpunit9 && chmod +x /usr/local/bin/phpunit9'; \
+	fi; \
+	$(DOCKER) exec --workdir /var/www/html/custom_apps/camerarawpreviews --user www-data $$CID phpunit9 --bootstrap tests/bootstrap.php tests/integration/EnvSanityTest.php
+
 .PHONY: coverage-all
 coverage-all:
 	php -d memory_limit=256M scripts/check-format-coverage.php FULL=1 INCLUDE_INDD=1
